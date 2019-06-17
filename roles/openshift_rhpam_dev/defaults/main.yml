@@ -10,7 +10,7 @@ businesscentral_template: "{{ resources_dir }}/rhpam-dev-business-central.yaml"
 
 businesscentral_image_namespace: openshift
 businesscentral_image: rhpam73-businesscentral-openshift
-businesscentral_image_tag: 1.0
+businesscentral_image_tag: 1.1-3
 business_central_cpu_request: 200m
 businesscentral_memory_request: 1Gi
 businesscentral_cpu_limit: 2000m
@@ -31,7 +31,7 @@ kieserver_template: "{{ resources_dir }}/rhpam-dev-kieserver.yaml"
 
 kieserver_image_namespace: openshift
 kieserver_image: rhpam73-kieserver-openshift
-kieserver_image_tag: 1.0
+kieserver_image_tag: 1.1-3
 
 kieserver_cpu_request: 200m
 kieserver_memory_request: 1Gi
