@@ -5,6 +5,16 @@
 .Prerequisites:
 * Log in into Openshift as cluster admin user.
 
+== Integration with RH-SSO
+As per the link:https://access.redhat.com/documentation/en-us/red_hat_process_automation_manager/7.3/html-single/deploying_a_red_hat_process_automation_manager_authoring_environment_on_red_hat_openshift_container_platform/index#environment-authoring-single-proc[Deploying a RH-PAM Authoring Env on RHT OCP], Business Central and KIE-Server can be secured via the _OpenID Connect_ protocol by integrating with RH-SSO.
+
+This ansible optionally allows for the provisioning of Business Central and KIE-Server integrated with a previously configured RH-SSO.
+
+The out-of-the-box defaults for integration with RH-SSO closely allign with an RH-SSO provisioned via link:https://github.com/gpe-mw-ansible-org/rh-sso-multi-realm/blob/master/README.adoc#kie-realm[rh-sso-multi-realm] ansible.
+
+All of the default ansible variables needed for integrating with RH-SSO can be found in the following file of this project:  roles/openshift_rhpam_dev/defaults/main.yml .
+The default values of these variables can all be over-written at the _ansible-playbook_ command line.
+
 
 == Manage Sequence of PAM 7 Installs
 

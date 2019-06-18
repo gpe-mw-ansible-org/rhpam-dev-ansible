@@ -25,6 +25,8 @@
   - command: "oc import-image registry.redhat.io/rhpam-7/{{ kieserver_image }}:{{ kieserver_image_tag }} -n {{ kieserver_image_namespace }} --confirm"
   - command: "oc import-image registry.redhat.io/rhpam-7/{{ businesscentral_image }}:{{ businesscentral_image_tag }} -n {{ businesscentral_image_namespace }} --confirm"
   when: not use_custom_pam|bool
+  ignore_errors: true
+
 
 - name: create {{ service_account }} service account
   oc_serviceaccount:

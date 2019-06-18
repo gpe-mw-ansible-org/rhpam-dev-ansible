@@ -85,3 +85,28 @@ psql_cpu_limit: 500m
 psql_memory_limit: 512Mi
 
 use_custom_pam: false
+
+
+# ##########   RH-SSO Integration    ###############
+
+# Values below are set as per the default "kie-realm" provisioned from:
+#   https://github.com/gpe-mw-ansible-org/rh-sso-multi-realm/blob/master/README.adoc#kie-realm 
+
+# Keep blank unless actually integrating with RH-SSO
+# If integrating with RH-SSO, use a URL similar to the following:
+#   https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
+sso_url:
+sso_realm: kie-realm
+sso_disable_ssl_certificate_validation: "true"
+
+business_central_sso_client: business-central
+business_central_sso_secret: 252793ed-7118-4ca8-8dab-5622fa97d892
+kie_server_sso_client: kie-server
+kie_server_sso_secret: 252793ed-7118-4ca8-8dab-5622fa97d892
+
+# The following will be used to create the above SSO clients in RH-SSO if they do not already exist in the {{ sso_realm }}.
+sso_username: admin
+sso_password: admin1234
+
+###########################################################
+
