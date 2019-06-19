@@ -3,7 +3,18 @@
 = RHPAM (Business Central + KIE Server + Postgres) Provisioning
 
 .Prerequisites:
-* Log in into Openshift as cluster admin user.
+* Existing OCP 3.11 cluster environment
+* Authentication to that existing OCP 3.11 environment as a cluster admin user.
+
+== Overview
+This ansible assists in the provisioning of one or more Red Hat Process Automation Manager instances on a pre-existing OpenShift environment.
+
+This ansible is useful for supporting demos and labs where the focus is the RH-PAM product.
+
+The following diagram depicts the various components provisioned with this ansible:
+
+image::images/arch_topology.png[]
+
 
 == Integration with RH-SSO
 As per the link:https://access.redhat.com/documentation/en-us/red_hat_process_automation_manager/7.3/html-single/deploying_a_red_hat_process_automation_manager_authoring_environment_on_red_hat_openshift_container_platform/index#environment-authoring-single-proc[Deploying a RH-PAM Authoring Env on RHT OCP], Business Central and KIE-Server can be secured via the _OpenID Connect_ protocol by integrating with RH-SSO.
@@ -29,7 +40,7 @@ Use only in a dedicated OCP cluster workshop environment:  ie:  https://labs.ope
 #   1) quay.io/btison/rhpam72-kieserver-openshift-gpte:1.1 
 #   2) quay.io/btison/rhpam72-businesscentral-openshift-gpte:1.1
 # The images are configured with users and groups required to support GPTE courses and labs.
-use_custom_pam=true
+use_custom_pam=false
 
 seq_start=1     # specify first rhpam env to manage
 seq_end=1       # specify last rhpam env to manage
@@ -65,7 +76,7 @@ $ ansible-playbook playbooks/install.yml \
 #   1) quay.io/btison/rhpam72-kieserver-openshift-gpte:1.1 
 #   2) quay.io/btison/rhpam72-businesscentral-openshift-gpte:1.1
 # The images are configured with users and groups required to support GPTE courses and labs.
-use_custom_pam=true
+use_custom_pam=false
 
 # project names will be of convention: pam-7-tools-{{ guid }} and will be owned by {{ ocp_user }}
 ocp_user=opentlcuser-redhat.com
