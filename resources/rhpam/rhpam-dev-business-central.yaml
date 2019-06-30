@@ -165,7 +165,7 @@ items:
           - name: JAVA_OPTS_APPEND
             value: "{{ businesscentral_java_opts_append }}"
           - name: SSO_URL
-            value: "{{ sso_url }}"
+            value: "{{ rhsso_url }}"
           - name: SSO_OPENIDCONNECT_DEPLOYMENTS
             value: "ROOT.war"
           - name: SSO_REALM

@@ -6,3 +6,9 @@ guid: "{{ ocp_user }}"
 project_rhpam: "rhpam-dev-{{ guid }}"
 project_rhpam_display_name: "RHPAM-dev"
 project_rhpam_desc: "RHPAM dev environment"
+
+configure_smtp_relay: false
+smtp_host: changeme
+smtp_port: 25
+smtp_userid: changeme
+smtp_passwd: changeme

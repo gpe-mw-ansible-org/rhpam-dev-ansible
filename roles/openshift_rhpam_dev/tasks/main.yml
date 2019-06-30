@@ -159,3 +159,27 @@
     files:
       - "{{ work_dir }}/rhpam-dev-kieserver.yaml"
   when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
+
+- name: "enable smtp-relay sidecar: {{ configure_smtp_relay }}"
+  block:
+  - shell: >
+      {{ openshift_cli }} patch dc/{{ kieserver_application_name }} -n {{ ocp_project }} --type=json -p "[{\"op\": \"add\",
+        \"path\": \"/spec/template/spec/containers/1\",
+        \"value\": {
+            \"name\": \"smtp-relay\",
+            \"image\": \"quay.io/rhtgptetraining/ocp-smtp-relay:1.0\",
+            \"imagePullPolicy\": \"Always\",
+            \"resources\": { \"limits\": {\"cpu\": \"500m\",\"memory\": \"512Mi\"}},
+            \"ports\": [{ \"containerPort\": 25, \"protocol\": \"TCP\" }],
+            \"env\": [
+              { \"name\": \"MTP_RELAY\", \"value\": \"{{ smtp_host }}\" },
+              { \"name\": \"MTP_PORT\", \"value\": \"{{ smtp_port }}\" },
+              { \"name\": \"MTP_USER\", \"value\": \"{{ smtp_userid }}\" },
+              { \"name\": \"MTP_PASS\", \"value\": \"{{ smtp_passwd }}\" }
+            ]
+        }}]"
+  
+  when: configure_smtp_relay|bool
+
+- name: "resume kie-server"
+  shell: "{{ openshift_cli }} rollout resume dc/{{ kieserver_application_name }} -n {{ ocp_project }}"

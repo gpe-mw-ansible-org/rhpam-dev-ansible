@@ -69,8 +69,8 @@ use_custom_pam=false
 seq_start=1     # specify first rhpam env to manage
 seq_end=1       # specify last rhpam env to manage
 
-sso_url=        # optional; should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
-                # Review the following for more details:  roles/openshift_rhpam_dev/defaults/main.yml
+rhsso_url=        # optional; should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
+                  # Review the following for more details:  roles/openshift_rhpam_dev/defaults/main.yml
 
 -----
 
@@ -81,7 +81,7 @@ $ ansible-playbook playbooks/install.yml \
     -e use_custom_pam=$use_custom_pam \
     -e seq_start=$seq_start \
     -e seq_end=$seq_end \
-    -e sso_url=$sso_url
+    -e rhsso_url=$rhsso_url
 -----
 
 . Uninstall
@@ -115,8 +115,8 @@ use_cluster_quota=true
 kieserver_image_namespace=rhpam-dev-$guid
 businesscentral_image_namespace=rhpam-dev-$guid
 
-sso_url=        # optional; should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
-                # Review the following for more details:  roles/openshift_rhpam_dev/defaults/main.yml
+rhsso_url=        # optional; should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
+                  # Review the following for more details:  roles/openshift_rhpam_dev/defaults/main.yml
 -----
 
 
@@ -148,7 +148,7 @@ $ ansible-playbook playbooks/rhpam_dev.yml \
     -e kieserver_image_namespace=$kieserver_image_namespace \
     -e businesscentral_image_namespace=$businesscentral_image_namespace \
     -e use_custom_pam=$use_custom_pam \
-    -e sso_url=$sso_url
+    -e rhsso_url=$rhsso_url
 -----
 
 
