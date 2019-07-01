@@ -162,6 +162,9 @@
 
 - name: "enable smtp-relay sidecar: {{ configure_smtp_relay }}"
   block:
+  - name: "enable the following service account with anyuid scc to allow smtp-relay to bind to port 25;  {{ service_account }}"
+    shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ ocp_project }}"
+ 
   - shell: >
       {{ openshift_cli }} patch dc/{{ kieserver_application_name }} -n {{ ocp_project }} --type=json -p "[{\"op\": \"add\",
         \"path\": \"/spec/template/spec/containers/1\",
