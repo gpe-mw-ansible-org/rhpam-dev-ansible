@@ -180,6 +180,8 @@ items:
             value: "{{ business_central_sso_client }}"
           - name: SSO_SECRET
             value: "{{ business_central_sso_secret }}"
+          - name: SSO_PRINCIPAL_ATTRIBUTE
+            value: "preferred_username"
         volumes:
         - name: "{{ businesscentral_application_name }}-pvol"
           persistentVolumeClaim:
