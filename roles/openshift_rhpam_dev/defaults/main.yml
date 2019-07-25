@@ -47,8 +47,8 @@ kieserver_controller_user: controllerUser
 kieserver_controller_password: controller1!
 kieserver_user: executionUser
 kieserver_password: execution1!
-kie_maven_user: mavenUser
-kie_maven_password: maven1!
+kie_maven_user: adminUser
+kie_maven_password: admin1!
 kie_mbeans: enabled
 
 kieserver_id: kieserver-dev
