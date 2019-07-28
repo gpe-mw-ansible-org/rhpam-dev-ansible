@@ -208,6 +208,8 @@ items:
             value: "{{ kie_server_sso_client }}"
           - name: SSO_SECRET
             value: "{{ kie_server_sso_secret }}"
+          - name: SSO_ENABLE_CORS
+            value: "true"
 
           # Default for org.kie-mail.session = java:/jbpmMailSession
           # Will switch back to Default since current approach is to add a postfix based smtp relay as a sidecar listening on localhost:25
