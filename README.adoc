@@ -3,10 +3,54 @@
 = RHPAM (Business Central + KIE Server + Postgres) Provisioning
 
 .Prerequisites:
-* Log in into Openshift as cluster admin user.
+* Existing OCP 3.11 cluster environment
+* Authentication to that existing OCP 3.11 environment as a cluster admin user.
+
+== Overview
+This ansible assists in the provisioning of one or more Red Hat Process Automation Manager instances on a pre-existing OpenShift environment.
+
+This ansible is useful for supporting demos and labs where the focus is the RH-PAM product.
+
+The following diagram depicts the OpenShift project and corresponding components provisioned by the ansible in this project (along with related ansible):
+
+image::images/arch_topology.png[]
+
+. *pam7-tools-$guid*
++
+This OCP project contains a Nexus server and a _pgadmin4_ server.
+
+. *rhpam-dev-$guid*
++
+This OCP project contains the PAM Business Central and PAM Kie-server.
+The PAM Kie-server stores the state of long running business processes in the _rhpam-postgresql_ database. 
+
+. *rhsso-sso0*
++
+RH-PAM offers the ability to optionally secure Business Central and Kie-server using the OpenID Connect protocol.
+This _rhpam-dev-ansible_ project provides the ability to optionally integrate with a RH-SSO environment.
++
+A RH-SSO environment can be provisioned using the link:https://github.com/gpe-mw-ansible-org/rh-sso-multi-realm/blob/master/README.adoc#kie-realm[rh-sso-multi-realm] ansible.
+The _rh-sso-multi-realm_ ansible will create an OCP project called _rhsso-sso0_ . 
+Within this _rhsso-sso0_ OCP project, a RH-SSO and corresponding mysql databased will be installed.
++
+The RH-SSO instance will be pre-configured with a SSO realm called: _kie-realm_.
+_kie-realm_ comes pre-configured with users and roles that support RH-PAM Business Central and Kie-Server.
+
+
+== Optional Integration with RH-SSO
+As per the link:https://access.redhat.com/documentation/en-us/red_hat_process_automation_manager/7.3/html-single/deploying_a_red_hat_process_automation_manager_authoring_environment_on_red_hat_openshift_container_platform/index#environment-authoring-single-proc[Deploying a RH-PAM Authoring Env on RHT OCP], Business Central and KIE-Server can be secured via the _OpenID Connect_ protocol by integrating with RH-SSO.
+
+This ansible optionally allows for the provisioning of Business Central and KIE-Server integrated with a previously configured RH-SSO.
+
+The out-of-the-box defaults for integration with RH-SSO closely allign with an RH-SSO provisioned via link:https://github.com/gpe-mw-ansible-org/rh-sso-multi-realm/blob/master/README.adoc#kie-realm[rh-sso-multi-realm] ansible.
+
+All of the default ansible variables needed for integrating with RH-SSO can be found in the following file of this project:  roles/openshift_rhpam_dev/defaults/main.yml .
+The default values of these variables can all be over-written at the _ansible-playbook_ command line.
 
 
 == Manage Sequence of PAM 7 Installs
+The ansible in this project allows for provisioning of a sequence of PAM 7 instances.
+Use this approach when needing to provision a lab environment for multiple students on an existing OCP environment.
 
 NOTE: This approach is not applicable in a shared GPTE cluster such as na311.
 Use only in a dedicated OCP cluster workshop environment:  ie:  https://labs.opentlc.com -> Services -> OPENTLC OpenShift Labs -> OpenShift Workshop Deployer
@@ -14,15 +58,19 @@ Use only in a dedicated OCP cluster workshop environment:  ie:  https://labs.ope
 . Environment Variables
 +
 -----
-# Using custom images for Business-Central and KIE Server.
-# Specifically, the following are derived from RHT RHPAM 7.2.x images:
+# use_custom_pam :  optional; default value is false in which case PAM images from registry.redhat.io will be used.
+# If set to true, then custom images for Business-Central and KIE Server will be used.
+# Specifically, the following custom images are derived from RHT RHPAM 7.2.x images:
 #   1) quay.io/btison/rhpam72-kieserver-openshift-gpte:1.1 
 #   2) quay.io/btison/rhpam72-businesscentral-openshift-gpte:1.1
 # The images are configured with users and groups required to support GPTE courses and labs.
-use_custom_pam=true
+use_custom_pam=false
 
 seq_start=1     # specify first rhpam env to manage
 seq_end=1       # specify last rhpam env to manage
+
+rhsso_url=        # optional; should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
+                  # Review the following for more details:  roles/openshift_rhpam_dev/defaults/main.yml
 
 -----
 
@@ -32,7 +80,8 @@ seq_end=1       # specify last rhpam env to manage
 $ ansible-playbook playbooks/install.yml \
     -e use_custom_pam=$use_custom_pam \
     -e seq_start=$seq_start \
-    -e seq_end=$seq_end
+    -e seq_end=$seq_end \
+    -e rhsso_url=$rhsso_url
 -----
 
 . Uninstall
@@ -50,12 +99,13 @@ $ ansible-playbook playbooks/install.yml \
 . Shell Environment Variables
 +
 -----
-# Using custom images for Business-Central and KIE Server.
-# Specifically, the following are derived from RHT RHPAM 7.2.x images:
+# use_custom_pam :  optional; default value is false in which case PAM images from registry.redhat.io will be used.
+# If set to true, then custom images for Business-Central and KIE Server will be used.
+# Specifically, the following custom images are derived from RHT RHPAM 7.2.x images:
 #   1) quay.io/btison/rhpam72-kieserver-openshift-gpte:1.1 
 #   2) quay.io/btison/rhpam72-businesscentral-openshift-gpte:1.1
 # The images are configured with users and groups required to support GPTE courses and labs.
-use_custom_pam=true
+use_custom_pam=false
 
 # project names will be of convention: pam-7-tools-{{ guid }} and will be owned by {{ ocp_user }}
 ocp_user=opentlcuser-redhat.com
@@ -64,6 +114,9 @@ guid=1234
 use_cluster_quota=true
 kieserver_image_namespace=rhpam-dev-$guid
 businesscentral_image_namespace=rhpam-dev-$guid
+
+rhsso_url=        # optional; should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
+                  # Review the following for more details:  roles/openshift_rhpam_dev/defaults/main.yml
 -----
 
 
@@ -94,7 +147,8 @@ $ ansible-playbook playbooks/rhpam_dev.yml \
     -e use_cluster_quota=$use_cluster_quota \
     -e kieserver_image_namespace=$kieserver_image_namespace \
     -e businesscentral_image_namespace=$businesscentral_image_namespace \
-    -e use_custom_pam=$use_custom_pam
+    -e use_custom_pam=$use_custom_pam \
+    -e rhsso_url=$rhsso_url
 -----
 
 
