@@ -22,3 +22,4 @@ docker.pid
 *test.yml
 hosts
 jq-linux64
+.vscode/
