@@ -185,5 +185,23 @@
 
   when: configure_smtp_relay|bool
 
+- name: "enable smtp-relay sidecar (fake_smtp): {{ fake_smtp }}"
+  block:
+  - name: "enable the following service account with anyuid scc to allow smtp-relay to bind to port 25 (fakeSMTP);  {{ service_account }}"
+    shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ ocp_project }}"
+
+  - shell: >
+      {{ openshift_cli }} patch dc/{{ kieserver_application_name }} -n {{ ocp_project }} --type=json -p "[{\"op\": \"add\",
+        \"path\": \"/spec/template/spec/containers/1\",
+        \"value\": {
+            \"name\": \"smtp-relay\",
+            \"image\": \"ghusta/fakesmtp:1.13\",
+            \"imagePullPolicy\": \"Always\",
+            \"resources\": { \"limits\": {\"cpu\": \"500m\",\"memory\": \"512Mi\"}},
+            \"ports\": [{ \"containerPort\": 25, \"protocol\": \"TCP\" }]
+        }}]"
+
+  when: fake_smtp|bool
+
 - name: "resume kie-server"
   shell: "{{ openshift_cli }} rollout resume dc/{{ kieserver_application_name }} -n {{ ocp_project }}"

@@ -151,4 +151,18 @@ $ ansible-playbook playbooks/rhpam_dev.yml \
     -e rhsso_url=$rhsso_url
 -----
 
+= Advanced process development workshop provisionning script
 
+----
+ansible-playbook playbooks/install.yml \
+ -e fake_smtp=true \
+ -e use_custom_pam=true \
+ -e kieserver_image=rhpam-ks-apd \
+ -e kieserver_image_tag=1.1 \
+ -e businesscentral_image=rhpam-bc-apd \
+ -e kieserver_image_tag=1.1 \
+ -e external_kieserver_image=quay.io/rhtgptetraining/rhpam-ks-apd:1.1 \
+ -e businesscentral_image_tag=1.1 \
+ -e external_businesscentral_image=quay.io/rhtgptetraining/rhpam-bc-apd:1.1 \
+ -e seq_start=1 -e seq_end=1 
+----
