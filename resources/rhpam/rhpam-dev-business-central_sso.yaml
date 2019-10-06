@@ -164,6 +164,24 @@ items:
             value: "{{ nexus_path }}"
           - name: JAVA_OPTS_APPEND
             value: "{{ businesscentral_java_opts_append }}"
+          - name: SSO_URL
+            value: "{{ rhsso_url }}"
+          - name: SSO_OPENIDCONNECT_DEPLOYMENTS
+            value: "ROOT.war"
+          - name: SSO_REALM
+            value: "{{ sso_realm }}"
+          - name: SSO_USERNAME
+            value: "{{ sso_username }}"
+          - name: SSO_PASSWORD
+            value: "{{ sso_password }}"
+          - name: SSO_DISABLE_SSL_CERTIFICATE_VALIDATION
+            value: "{{ sso_disable_ssl_certificate_validation }}"
+          - name: SSO_CLIENT
+            value: "{{ business_central_sso_client }}"
+          - name: SSO_SECRET
+            value: "{{ business_central_sso_secret }}"
+          - name: SSO_PRINCIPAL_ATTRIBUTE
+            value: "preferred_username"
         volumes:
         - name: "{{ businesscentral_application_name }}-pvol"
           persistentVolumeClaim:
