@@ -3,7 +3,7 @@
 = RHPAM (Business Central + KIE Server + Postgres) Provisioning
 
 .Prerequisites:
-* Existing OCP 3.11 cluster environment
+* Existing *OCP 3.11* cluster environment
 * Authentication to that existing OCP 3.11 environment as a cluster admin user.
 
 == Overview
@@ -158,11 +158,34 @@ ansible-playbook playbooks/install.yml \
  -e fake_smtp=true \
  -e use_custom_pam=true \
  -e kieserver_image=rhpam-ks-apd \
- -e kieserver_image_tag=1.1 \
+ -e kieserver_image_tag=1.2 \
  -e businesscentral_image=rhpam-bc-apd \
- -e kieserver_image_tag=1.1 \
- -e external_kieserver_image=quay.io/rhtgptetraining/rhpam-ks-apd:1.1 \
- -e businesscentral_image_tag=1.1 \
- -e external_businesscentral_image=quay.io/rhtgptetraining/rhpam-bc-apd:1.1 \
+ -e kieserver_image_tag=1.2 \
+ -e external_kieserver_image=quay.io/rhtgptetraining/rhpam-ks-apd:1.2 \
+ -e businesscentral_image_tag=1.2 \
+ -e external_businesscentral_image=quay.io/rhtgptetraining/rhpam-bc-apd:1.2 \
  -e seq_start=1 -e seq_end=1 
+----
+
+= quay.io images generation
+
+. Login to Red Hat registry
+----
+podman login registry.redhat.io
+----
+
+. Build images
+----
+git clone https://github.com/gpe-mw-training/advanced-process-development-labs-etc.git
+cd advanced-process-development-labs-etc
+mvn clean install
+cd etc/kie-server-docker
+podman build -t rhpam-ks-apd:1.2 .
+----
+
+. Push images
+----
+podman login quay.io
+podman tag rhpam-ks-apd:1.2 quay.io/rhtgptetraining/rhpam-ks-apd:1.2
+podman push quay.io/rhtgptetraining/rhpam-ks-apd:1.2
 ----

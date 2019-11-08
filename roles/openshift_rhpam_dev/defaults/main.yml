@@ -31,9 +31,9 @@ kieserver_template: "{{ resources_dir }}/rhpam-dev-kieserver.yaml"
 
 kieserver_image_namespace: openshift
 kieserver_image: rhpam74-kieserver-openshift
-kieserver_image_tag: 1.0
-external_kieserver_image: quay.io/btison/rhpam73-kieserver-openshift-gpte:1.0
-external_businesscentral_image: quay.io/btison/rhpam73-businesscentral-openshift-gpte:1.0
+kieserver_image_tag: latest
+external_kieserver_image: quay.io/rhtgptetraining/rhpam-ks-apd:latest
+external_businesscentral_image: quay.io/rhtgptetraining/rhpam-bc-apd:latest
 
 kieserver_cpu_request: 200m
 kieserver_memory_request: 1Gi
