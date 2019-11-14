@@ -1,0 +1,6 @@
+---
+
+application_name: loadtester
+loadtester_template: "{{ resources_dir }}/loadtester.yml"
+loadtester_image: quay.io/rhtgptetraining/loadtester:latest
+loadtester_deployment_name: loadtester

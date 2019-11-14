@@ -1,0 +1,24 @@
+---
+
+- name: copy loadtester template
+  template:
+    src: "{{ loadtester_template }}"
+    dest: "{{ work_dir }}/loadtester.yml"
+
+- name: check if loadtester is deployed
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ loadtester_deployment_name }}"
+    namespace: "{{ ocp_project }}"
+    kind: deployment
+  register: result
+
+- name: deploy loadtester
+  oc_list:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ ocp_project }}"
+    files:
+      - "{{ work_dir }}/loadtester.yml"
+  when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
