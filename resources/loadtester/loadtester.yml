@@ -1,0 +1,24 @@
+kind: List
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: {{ application_name }}
+    name: {{ loadtester_deployment_name }}
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: {{ application_name }}
+        name: {{ loadtester_deployment_name }}
+    template:
+      metadata:
+        labels:
+          app: {{ application_name }}
+          name: {{ loadtester_deployment_name }}
+      spec:
+        containers:
+        - image: {{ loadtester_image }}
+          name: {{ loadtester_deployment_name }}

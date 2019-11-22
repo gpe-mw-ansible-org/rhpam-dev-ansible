@@ -1,0 +1,9 @@
+---
+
+- name: delete loadtester deployment
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ loadtester_deployment_name }}"
+    namespace: "{{ ocp_project }}"
+    kind: deployment
