@@ -154,6 +154,13 @@ $ ansible-playbook playbooks/rhpam_dev.yml \
 = Advanced process development workshop provisionning script
 
 ----
+rhsso_url=              # optional; should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
+                        # Review the following for more details:  roles/openshift_rhpam_dev/defaults/main.yml
+
+# Prometheus Server Extension Disabled
+# If set to false, the prometheus server extension will be enabled.
+PROMETHEUS_SERVER_EXT_DISABLED=true
+
 ansible-playbook playbooks/install.yml \
  -e fake_smtp=true \
  -e use_custom_pam=true \
@@ -164,6 +171,8 @@ ansible-playbook playbooks/install.yml \
  -e external_kieserver_image=quay.io/rhtgptetraining/rhpam-ks-apd:1.2 \
  -e businesscentral_image_tag=1.2 \
  -e external_businesscentral_image=quay.io/rhtgptetraining/rhpam-bc-apd:1.2 \
+ -e rhsso_url=$rhsso_url \
+ -e PROMETHEUS_SERVER_EXT_DISABLED=$PROMETHEUS_SERVER_EXT_DISABLED \
  -e seq_start=1 -e seq_end=1 
 ----
 

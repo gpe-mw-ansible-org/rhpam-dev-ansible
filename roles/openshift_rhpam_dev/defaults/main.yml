@@ -84,6 +84,8 @@ psql_memory_limit: 512Mi
 
 use_custom_pam: false
 
+PROMETHEUS_SERVER_EXT_DISABLED: true
+
 
 # ##########   RH-SSO Integration    ###############
 

@@ -217,3 +217,5 @@ items:
           # Will switch back to Default since current approach is to add a postfix based smtp relay as a sidecar listening on localhost:25
           - name: JAVA_OPTS_APPEND
             value: " -Dorg.kie.mail.session=java:jboss/mail/Default"
+          - name: PROMETHEUS_SERVER_EXT_DISABLED
+            value: "{{ PROMETHEUS_SERVER_EXT_DISABLED }}"
