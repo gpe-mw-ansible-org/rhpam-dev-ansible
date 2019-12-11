@@ -27,19 +27,23 @@
   - set_fact:
       bc_template_yaml: rhpam-dev-business-central_sso.yaml
       ks_template_yaml: rhpam-dev-kieserver_sso.yaml
-  when: sso_url is defined
+
+  # Need to support https://github.com/jboss-container-images/jboss-eap-modules/blob/EAP_725_CR2_S390x/os-eap-sso/added/keycloak.sh#L493-L520
+  - name: "enable the following service account with view role to allow ability to query kube API for routes;  {{ service_account }}"
+    shell: "{{ openshift_cli }} adm policy add-role-to-user view -z {{ service_account }} -n {{ ocp_project }}"
+  when: rhsso_url is defined
 
 - name: define template names
   block:
   - set_fact:
       bc_template_yaml: rhpam-dev-business-central.yaml
       ks_template_yaml: rhpam-dev-kieserver.yaml
-  when: sso_url is not defined
+  when: rhsso_url is not defined
 
 - name: copy business-central template
   template:
-    src: "{{ businesscentral_template }}"
-    dest: "{{ work_dir }}/{{bc_template_yaml}}"
+    src: "{{ resources_dir }}/{{ bc_template_yaml }}"
+    dest: "{{ work_dir }}/{{ bc_template_yaml }}"
 
 - name: check if business-central is deployed
   oc_obj:
@@ -50,7 +54,7 @@
     kind: dc
   register: result
 
-- name: deploy business-central
+- name: "deploy business-central {{ bc_template_yaml }} "
   oc_list:
     state: present
     oc_binary: "{{ openshift_cli }}"
@@ -73,7 +77,7 @@
     - "{{ resources_dir }}/postgresql/*.sh"
     - "{{ resources_dir }}/postgresql/sql/*.sql"
 
-- name: create {{ postgresql_init_configmap }} configmap
+- name: "create {{ postgresql_init_configmap }} configmap"
   oc_configmap:
     oc_binary: "{{ openshift_cli }}"
     state: present
@@ -138,9 +142,9 @@
   delay: 30
   changed_when: false
 
-- name: copy kie-server template
+- name: "copy kie-server template {{ ks_template_yaml }}"
   template:
-    src: "{{ kieserver_template }}"
+    src: "{{ resources_dir }}/{{ ks_template_yaml }}"
     dest: "{{ work_dir }}/{{ks_template_yaml}}"
 
 - name: check if kie-server is deployed
@@ -152,7 +156,7 @@
     kind: dc
   register: result
 
-- name: deploy kie-server
+- name: "deploy kie-server {{ ks_template_yaml }}"
   oc_list:
     state: present
     oc_binary: "{{ openshift_cli }}"
