@@ -12,3 +12,5 @@ smtp_host: changeme
 smtp_port: 25
 smtp_userid: changeme
 smtp_passwd: changeme
+
+fake_smtp: false

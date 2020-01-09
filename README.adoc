@@ -1,15 +1,17 @@
 :numbered:
 
-= RHPAM (Business Central + KIE Server + Postgres) Provisioning
+= RHPAM Provisioning
 
 .Prerequisites:
-* Existing *OCP 3.11* cluster environment
-* Authentication to that existing OCP 3.11 environment as a cluster admin user.
+* Existing *OCP 4.2* cluster environment
+* Authentication to that existing OCP 4.2 environment as a cluster admin user.
 
 == Overview
 This ansible assists in the provisioning of one or more Red Hat Process Automation Manager instances on a pre-existing OpenShift environment.
 
 This ansible is useful for supporting demos and labs where the focus is the RH-PAM product.
+
+The PAM KIE-Server is configured to leverage a PostgreSQL database.
 
 The following diagram depicts the OpenShift project and corresponding components provisioned by the ansible in this project (along with related ansible):
 
@@ -47,79 +49,106 @@ The out-of-the-box defaults for integration with RH-SSO closely allign with an R
 All of the default ansible variables needed for integrating with RH-SSO can be found in the following file of this project:  roles/openshift_rhpam_dev/defaults/main.yml .
 The default values of these variables can all be over-written at the _ansible-playbook_ command line.
 
+== Environment Variables
 
-== Manage Sequence of PAM 7 Installs
-The ansible in this project allows for provisioning of a sequence of PAM 7 instances.
-Use this approach when needing to provision a lab environment for multiple students on an existing OCP environment.
-
-NOTE: This approach is not applicable in a shared GPTE cluster such as na311.
-Use only in a dedicated OCP cluster workshop environment:  ie:  https://labs.opentlc.com -> Services -> OPENTLC OpenShift Labs -> OpenShift Workshop Deployer
-
-. Environment Variables
-+
------
-# use_custom_pam :  optional; default value is false in which case PAM images from registry.redhat.io will be used.
-# If set to true, then custom images for Business-Central and KIE Server will be used.
-# Specifically, the following custom images are derived from RHT RHPAM 7.2.x images:
-#   1) quay.io/btison/rhpam72-kieserver-openshift-gpte:1.1 
-#   2) quay.io/btison/rhpam72-businesscentral-openshift-gpte:1.1
-# The images are configured with users and groups required to support GPTE courses and labs.
-use_custom_pam=false
-
-seq_start=1     # specify first rhpam env to manage
-seq_end=1       # specify last rhpam env to manage
-
-rhsso_url=        # optional; should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
-                  # Review the following for more details:  roles/openshift_rhpam_dev/defaults/main.yml
-
------
-
-. Install
-+
------
-$ ansible-playbook playbooks/install.yml \
-    -e use_custom_pam=$use_custom_pam \
-    -e seq_start=$seq_start \
-    -e seq_end=$seq_end \
-    -e rhsso_url=$rhsso_url
------
-
-. Uninstall
-+
------
-$ ansible-playbook playbooks/install.yml \
-    -e ACTION=uninstall \
-    -e seq_start=$seq_start \
-    -e seq_end=$seq_end
------
-
-
-== Manage Individual Components of a Single PAM7 Install
-
-. Shell Environment Variables
-+
------
-# use_custom_pam :  optional; default value is false in which case PAM images from registry.redhat.io will be used.
-# If set to true, then custom images for Business-Central and KIE Server will be used.
-# Specifically, the following custom images are derived from RHT RHPAM 7.2.x images:
-#   1) quay.io/btison/rhpam72-kieserver-openshift-gpte:1.1 
-#   2) quay.io/btison/rhpam72-businesscentral-openshift-gpte:1.1
-# The images are configured with users and groups required to support GPTE courses and labs.
-use_custom_pam=false
-
-# project names will be of convention: pam-7-tools-{{ guid }} and will be owned by {{ ocp_user }}
-ocp_user=opentlcuser-redhat.com
-guid=1234 
-
-use_cluster_quota=true
 kieserver_image_namespace=rhpam-dev-$guid
 businesscentral_image_namespace=rhpam-dev-$guid
 
-rhsso_url=        # optional; should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
-                  # Review the following for more details:  roles/openshift_rhpam_dev/defaults/main.yml
+. *configure_smtp_relay*
++
+Optional.
+Default = false
++
+When set to true, kie-server pod is injected with a sidecar that listens on port 25.
+All outbound SMTP traffic will be relayed to a remote SMTP server.
+This SMTP relay leverages the following additional variables:
+
+.. *smtp_host*
+.. *smtp_port*
+.. *smtp_userid*
+.. *smtp_passwd*
+
+. *fake_smtp*
++
+Optional.
+Default = false
++
+link:https://github.com/Nilhcem/FakeSMTP[FakeSMTP] is a Fake SMTP Server with GUI for testing emails in applications easily. It is written in Java.
++
+When this variable is set to true, kie-server pod is injected with a fake SMTP server sidecar.
+
+. *install_tools*
++
+Optional. Default=true
++
+When set to false, the _pam-7-tools-$userId_ namespace is not created and corresponding Nexus and PostgreSQL Admin Console are not provisioned.
+
+. *PROMETHEUS_SERVER_EXT_DISABLED*
++
+Optional. Default = true
++
+If set to false, the prometheus server extension will be enabled.
+
+
+. *rhsso_url*
++
+Optional;
++
+If set, value should be of convention:  https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
++
+If set, BC and KIE-Server will be configured to participate in OpenID Connect (OIDC) security
+
+. *seq_start*
++
+Optional.
+Set this variable when needing to provision a lab environment for multiple students on an existing OCP environment.
+Specify first rhpam env to manage; default = 1
+
+. *seq_end*
++
+Optional.  Specify last rhpam env to manage; default = 1
+
+. *use_cluster_quota*
++
+Optional. Default value is: true
+
+. *use_custom_pam*
++
+Optional; 
++
+Default value is false in which case PAM images from registry.redhat.io will be used.
++
+If set to true, then custom images for Business-Central and KIE Server will be used.
+The images are configured with users and groups required to support GPTE courses and labs.
+Specifically, the following custom images are derived from RHT RHPAM 7.2.x images:
+
+.. quay.io/btison/rhpam72-kieserver-openshift-gpte:1.1 
+.. quay.io/btison/rhpam72-businesscentral-openshift-gpte:1.1
+
+== Install Examples
+
+=== All Components
+
+-----
+ansible-playbook playbooks/install.yml \
+ -e fake_smtp=true \
+ -e configure_smtp_relay=false \
+ -e use_custom_pam=true \
+ -e kieserver_image=rhpam-ks-apd \
+ -e kieserver_image_tag=1.2 \
+ -e businesscentral_image=rhpam-bc-apd \
+ -e kieserver_image_tag=1.2 \
+ -e external_kieserver_image=quay.io/rhtgptetraining/rhpam-ks-apd:1.2 \
+ -e businesscentral_image_tag=1.2 \
+ -e external_businesscentral_image=quay.io/rhtgptetraining/rhpam-bc-apd:1.2 \
+ -e PROMETHEUS_SERVER_EXT_DISABLED=$PROMETHEUS_SERVER_EXT_DISABLED \
+ -e rhsso_url=$rhsso_url \
+ -e install_tools=false \
+ -e seq_start=1 -e seq_end=1
 -----
 
 
+=== Individual Components
 . Provision PostgreSQL Admin Console
 +
 -----
@@ -151,23 +180,9 @@ $ ansible-playbook playbooks/rhpam_dev.yml \
     -e rhsso_url=$rhsso_url
 -----
 
-= Advanced process development workshop provisionning script
 
-----
-ansible-playbook playbooks/install.yml \
- -e fake_smtp=true \
- -e use_custom_pam=true \
- -e kieserver_image=rhpam-ks-apd \
- -e kieserver_image_tag=1.2 \
- -e businesscentral_image=rhpam-bc-apd \
- -e kieserver_image_tag=1.2 \
- -e external_kieserver_image=quay.io/rhtgptetraining/rhpam-ks-apd:1.2 \
- -e businesscentral_image_tag=1.2 \
- -e external_businesscentral_image=quay.io/rhtgptetraining/rhpam-bc-apd:1.2 \
- -e seq_start=1 -e seq_end=1 
-----
 
-= quay.io images generation
+== Custom PAM images generation
 
 . Login to Red Hat registry
 ----
@@ -189,3 +204,12 @@ podman login quay.io
 podman tag rhpam-ks-apd:1.2 quay.io/rhtgptetraining/rhpam-ks-apd:1.2
 podman push quay.io/rhtgptetraining/rhpam-ks-apd:1.2
 ----
+
+== Uninstall
+
+-----
+$ ansible-playbook playbooks/install.yml \
+    -e ACTION=uninstall \
+    -e seq_start=$seq_start \
+    -e seq_end=$seq_end
+-----

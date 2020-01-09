@@ -6,8 +6,6 @@ kieserver_application_name: "{{ application_name }}-kieserver"
 
 service_account: "{{ application_name }}-rhpamsvc"
 
-businesscentral_template: "{{ resources_dir }}/rhpam-dev-business-central.yaml"
-
 businesscentral_image_namespace: openshift
 businesscentral_image: rhpam74-businesscentral-openshift
 businesscentral_image_tag: 1.0
@@ -26,8 +24,6 @@ kie_workbench_controller_openshift_enabled: "false"
 
 businesscentral_pvc_name: "{{ businesscentral_application_name }}-claim"
 businesscentral_pvc_volume_capacity: "1Gi"
-
-kieserver_template: "{{ resources_dir }}/rhpam-dev-kieserver.yaml"
 
 kieserver_image_namespace: openshift
 kieserver_image: rhpam74-kieserver-openshift
@@ -88,6 +84,8 @@ psql_memory_limit: 512Mi
 
 use_custom_pam: false
 
+PROMETHEUS_SERVER_EXT_DISABLED: true
+
 
 # ##########   RH-SSO Integration    ###############
 
@@ -97,7 +95,7 @@ use_custom_pam: false
 # Keep blank unless actually integrating with RH-SSO
 # If integrating with RH-SSO, use a URL similar to the following:
 #   https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
-sso_url: 
+rhsso_url: 
 sso_realm: kie-realm
 sso_disable_ssl_certificate_validation: "true"
 

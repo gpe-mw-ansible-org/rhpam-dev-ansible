@@ -22,25 +22,27 @@
     name: "{{ service_account }}"
     namespace: "{{ ocp_project }}"
 
-- name: define template names for sso
+- name: define template when using RH-SSO 
   block:
   - set_fact:
       bc_template_yaml: rhpam-dev-business-central_sso.yaml
       ks_template_yaml: rhpam-dev-kieserver_sso.yaml
-  when: sso_url is defined
 
-- name: define template names
+  # Need to support https://github.com/jboss-container-images/jboss-eap-modules/blob/EAP_725_CR2_S390x/os-eap-sso/added/keycloak.sh#L493-L520
+  - name: "enable the following service account with view role to allow ability to query kube API for routes;  {{ service_account }}"
+    shell: "{{ openshift_cli }} adm policy add-role-to-user view -z {{ service_account }} -n {{ ocp_project }}"
+  when: rhsso_url is defined
+
+- name: define template names when not using RH-SSO
   block:
   - set_fact:
       bc_template_yaml: rhpam-dev-business-central.yaml
       ks_template_yaml: rhpam-dev-kieserver.yaml
-  when: sso_url is not defined
+  when: rhsso_url is not defined
 
-- name: copy business-central template
-  template:
-    src: "{{ businesscentral_template }}"
-    dest: "{{ work_dir }}/{{bc_template_yaml}}"
 
+
+##########         Business Central       ###########  
 - name: check if business-central is deployed
   oc_obj:
     state: list
@@ -48,56 +50,41 @@
     name: "{{ businesscentral_application_name }}"
     namespace: "{{ ocp_project }}"
     kind: dc
-  register: result
+  register: bc_result
 
-- name: deploy business-central
-  oc_list:
-    state: present
-    oc_binary: "{{ openshift_cli }}"
-    namespace: "{{ ocp_project }}"
-    files:
-      - "{{ work_dir }}/{{bc_template_yaml}}"
-  when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
+- block:
+  - name: copy business-central template
+    template:
+      src: "{{ resources_dir }}/{{ bc_template_yaml }}"
+      dest: "{{ work_dir }}/{{ bc_template_yaml }}"
+  
+  
+  - name: "deploy business-central {{ bc_template_yaml }} "
+    oc_list:
+      state: present
+      oc_binary: "{{ openshift_cli }}"
+      namespace: "{{ ocp_project }}"
+      files:
+        - "{{ work_dir }}/{{bc_template_yaml}}"
+  
+  - name: wait for business-central to be ready
+    shell: "{{ openshift_cli }} get dc {{ businesscentral_application_name }} -o template --template={{ json_template }} -n {{ ocp_project }}"
+    vars:
+      json_template: '\{\{.status.readyReplicas\}\}'
+    register: result
+    until: result.stdout == "1"
+    retries: 10
+    delay: 30
+    changed_when: false
 
-# postgresql
-- name: create work directory
-  file:
-    path: "{{ work_dir }}/{{ postgresql_init_configmap }}"
-    state: directory
+  when: bc_result.ansible_module_results.stderr is defined and bc_result.ansible_module_results.stderr != ""
 
-- name: copy init files to work directory
-  copy:
-    src: "{{ item }}"
-    dest: "{{ work_dir }}/{{ postgresql_init_configmap }}/"
-  with_fileglob:
-    - "{{ resources_dir }}/postgresql/*.sh"
-    - "{{ resources_dir }}/postgresql/sql/*.sql"
+##########################################
 
-- name: create {{ postgresql_init_configmap }} configmap
-  oc_configmap:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    name: "{{ postgresql_init_configmap }}"
-    namespace: "{{ ocp_project }}"
-    from_file:
-      dir: "{{ work_dir }}/{{ postgresql_init_configmap }}"
 
-- name: copy postgresql template
-  template:
-    src: "{{ postgresql_template }}"
-    dest: "{{ work_dir }}/postgresql-persistent.yaml"
 
-- name: postgresql secret
-  oc_secret:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    namespace: "{{ ocp_project }}"
-    name: "{{ postgresql_credentials_secret }}"
-    type: generic
-    from_literal:
-      database-user: "{{ postgresql_username }}"
-      database-password: "{{ postgresql_password }}"
-      database-name: "{{ postgresql_database }}"
+
+######          KIE Server  postgresql      ###########
 
 - name: check if postgresql is deployed
   oc_obj:
@@ -106,43 +93,73 @@
     name: "{{ postgresql_application_name }}"
     namespace: "{{ ocp_project }}"
     kind: dc
-  register: result
+  register: psql_result
+  
 
-- name: deploy postgresql
-  oc_list:
-    state: present
-    oc_binary: "{{ openshift_cli }}"
-    namespace: "{{ ocp_project }}"
-    files:
-      - "{{ work_dir }}/postgresql-persistent.yaml"
-  when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
+- block:
+  - name: create work directory
+    file:
+      path: "{{ work_dir }}/{{ postgresql_init_configmap }}"
+      state: directory
+  
+  - name: copy init files to work directory
+    copy:
+      src: "{{ item }}"
+      dest: "{{ work_dir }}/{{ postgresql_init_configmap }}/"
+    with_fileglob:
+      - "{{ resources_dir }}/postgresql/*.sh"
+      - "{{ resources_dir }}/postgresql/sql/*.sql"
+  
+  - name: "create {{ postgresql_init_configmap }} configmap"
+    oc_configmap:
+      oc_binary: "{{ openshift_cli }}"
+      state: present
+      name: "{{ postgresql_init_configmap }}"
+      namespace: "{{ ocp_project }}"
+      from_file:
+        dir: "{{ work_dir }}/{{ postgresql_init_configmap }}"
+  
+  - name: copy postgresql template
+    template:
+      src: "{{ postgresql_template }}"
+      dest: "{{ work_dir }}/postgresql-persistent.yaml"
+  
+  - name: postgresql secret
+    oc_secret:
+      oc_binary: "{{ openshift_cli }}"
+      state: present
+      namespace: "{{ ocp_project }}"
+      name: "{{ postgresql_credentials_secret }}"
+      type: generic
+      from_literal:
+        database-user: "{{ postgresql_username }}"
+        database-password: "{{ postgresql_password }}"
+        database-name: "{{ postgresql_database }}"
+  
+  - name: deploy postgresql
+    oc_list:
+      state: present
+      oc_binary: "{{ openshift_cli }}"
+      namespace: "{{ ocp_project }}"
+      files:
+        - "{{ work_dir }}/postgresql-persistent.yaml"
 
-# kie server
-- name: wait for postgresql to be ready
-  shell: "{{ openshift_cli }} get dc {{ postgresql_application_name }} -o template --template={{ json_template }} -n {{ ocp_project }}"
-  vars:
-    json_template: '\{\{.status.readyReplicas\}\}'
-  register: result
-  until: result.stdout == "1"
-  retries: 10
-  delay: 30
-  changed_when: false
+  - name: wait for postgresql to be ready
+    shell: "{{ openshift_cli }} get dc {{ postgresql_application_name }} -o template --template={{ json_template }} -n {{ ocp_project }}"
+    vars:
+      json_template: '\{\{.status.readyReplicas\}\}'
+    register: result
+    until: result.stdout == "1"
+    retries: 10
+    delay: 30
+    changed_when: false
+  
+  when: psql_result.ansible_module_results.stderr is defined and psql_result.ansible_module_results.stderr != ""
+##########################################
 
-- name: wait for business-central to be ready
-  shell: "{{ openshift_cli }} get dc {{ businesscentral_application_name }} -o template --template={{ json_template }} -n {{ ocp_project }}"
-  vars:
-    json_template: '\{\{.status.readyReplicas\}\}'
-  register: result
-  until: result.stdout == "1"
-  retries: 10
-  delay: 30
-  changed_when: false
 
-- name: copy kie-server template
-  template:
-    src: "{{ kieserver_template }}"
-    dest: "{{ work_dir }}/{{ks_template_yaml}}"
 
+######       kie server     ##############
 - name: check if kie-server is deployed
   oc_obj:
     state: list
@@ -150,58 +167,67 @@
     name: "{{ kieserver_application_name }}"
     namespace: "{{ ocp_project }}"
     kind: dc
-  register: result
+  register: ks_result
 
-- name: deploy kie-server
-  oc_list:
-    state: present
-    oc_binary: "{{ openshift_cli }}"
-    namespace: "{{ ocp_project }}"
-    files:
-      - "{{ work_dir }}/{{ks_template_yaml}}"
-  when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
+- block:
+  - name: "copy kie-server template {{ ks_template_yaml }}"
+    template:
+      src: "{{ resources_dir }}/{{ ks_template_yaml }}"
+      dest: "{{ work_dir }}/{{ks_template_yaml}}"
+  
+  - name: "deploy kie-server {{ ks_template_yaml }}"
+    oc_list:
+      state: present
+      oc_binary: "{{ openshift_cli }}"
+      namespace: "{{ ocp_project }}"
+      files:
+        - "{{ work_dir }}/{{ks_template_yaml}}"
+  
+  - name: "enable smtp-relay sidecar: {{ configure_smtp_relay }}"
+    block:
+    - name: "enable the following service account with anyuid scc to allow smtp-relay to bind to port 25;  {{ service_account }}"
+      shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ ocp_project }}"
+  
+    - shell: >
+        {{ openshift_cli }} patch dc/{{ kieserver_application_name }} -n {{ ocp_project }} --type=json -p "[{\"op\": \"add\",
+          \"path\": \"/spec/template/spec/containers/1\",
+          \"value\": {
+              \"name\": \"smtp-relay\",
+              \"image\": \"quay.io/rhtgptetraining/ocp-smtp-relay:1.0\",
+              \"imagePullPolicy\": \"Always\",
+              \"resources\": { \"limits\": {\"cpu\": \"500m\",\"memory\": \"512Mi\"}},
+              \"ports\": [{ \"containerPort\": 25, \"protocol\": \"TCP\" }],
+              \"env\": [
+                { \"name\": \"MTP_RELAY\", \"value\": \"{{ smtp_host }}\" },
+                { \"name\": \"MTP_PORT\", \"value\": \"{{ smtp_port }}\" },
+                { \"name\": \"MTP_USER\", \"value\": \"{{ smtp_userid }}\" },
+                { \"name\": \"MTP_PASS\", \"value\": \"{{ smtp_passwd }}\" }
+              ]
+          }}]"
+  
+    when: configure_smtp_relay|bool
+  
+  - name: "enable smtp-relay sidecar (fake_smtp): {{ fake_smtp }}"
+    block:
+    - name: "enable the following service account with anyuid scc to allow smtp-relay to bind to port 25 (fakeSMTP);  {{ service_account }}"
+      shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ ocp_project }}"
+  
+    - shell: >
+        {{ openshift_cli }} patch dc/{{ kieserver_application_name }} -n {{ ocp_project }} --type=json -p "[{\"op\": \"add\",
+          \"path\": \"/spec/template/spec/containers/1\",
+          \"value\": {
+              \"name\": \"smtp-relay\",
+              \"image\": \"ghusta/fakesmtp:1.13\",
+              \"imagePullPolicy\": \"Always\",
+              \"resources\": { \"limits\": {\"cpu\": \"500m\",\"memory\": \"512Mi\"}},
+              \"ports\": [{ \"containerPort\": 25, \"protocol\": \"TCP\" }]
+          }}]"
+  
+    when: fake_smtp|bool
+  
+  - name: "resume kie-server"
+    shell: "{{ openshift_cli }} rollout resume dc/{{ kieserver_application_name }} -n {{ ocp_project }}"
 
-- name: "enable smtp-relay sidecar: {{ configure_smtp_relay }}"
-  block:
-  - name: "enable the following service account with anyuid scc to allow smtp-relay to bind to port 25;  {{ service_account }}"
-    shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ ocp_project }}"
+  when: ks_result.ansible_module_results.stderr is defined and ks_result.ansible_module_results.stderr != ""
 
-  - shell: >
-      {{ openshift_cli }} patch dc/{{ kieserver_application_name }} -n {{ ocp_project }} --type=json -p "[{\"op\": \"add\",
-        \"path\": \"/spec/template/spec/containers/1\",
-        \"value\": {
-            \"name\": \"smtp-relay\",
-            \"image\": \"quay.io/rhtgptetraining/ocp-smtp-relay:1.0\",
-            \"imagePullPolicy\": \"Always\",
-            \"resources\": { \"limits\": {\"cpu\": \"500m\",\"memory\": \"512Mi\"}},
-            \"ports\": [{ \"containerPort\": 25, \"protocol\": \"TCP\" }],
-            \"env\": [
-              { \"name\": \"MTP_RELAY\", \"value\": \"{{ smtp_host }}\" },
-              { \"name\": \"MTP_PORT\", \"value\": \"{{ smtp_port }}\" },
-              { \"name\": \"MTP_USER\", \"value\": \"{{ smtp_userid }}\" },
-              { \"name\": \"MTP_PASS\", \"value\": \"{{ smtp_passwd }}\" }
-            ]
-        }}]"
-
-  when: configure_smtp_relay|bool
-
-- name: "enable smtp-relay sidecar (fake_smtp): {{ fake_smtp }}"
-  block:
-  - name: "enable the following service account with anyuid scc to allow smtp-relay to bind to port 25 (fakeSMTP);  {{ service_account }}"
-    shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ ocp_project }}"
-
-  - shell: >
-      {{ openshift_cli }} patch dc/{{ kieserver_application_name }} -n {{ ocp_project }} --type=json -p "[{\"op\": \"add\",
-        \"path\": \"/spec/template/spec/containers/1\",
-        \"value\": {
-            \"name\": \"smtp-relay\",
-            \"image\": \"ghusta/fakesmtp:1.13\",
-            \"imagePullPolicy\": \"Always\",
-            \"resources\": { \"limits\": {\"cpu\": \"500m\",\"memory\": \"512Mi\"}},
-            \"ports\": [{ \"containerPort\": 25, \"protocol\": \"TCP\" }]
-        }}]"
-
-  when: fake_smtp|bool
-
-- name: "resume kie-server"
-  shell: "{{ openshift_cli }} rollout resume dc/{{ kieserver_application_name }} -n {{ ocp_project }}"
+################################################
