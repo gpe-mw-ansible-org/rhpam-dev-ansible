@@ -14,3 +14,6 @@ project_annotations: "openshift.io/requester={{ ocp_user }}"
 user_prefix: user
 
 use_cluster_quota: false
+
+seq_start: 1
+seq_end: 1
