@@ -89,6 +89,23 @@ Optional. Default = true
 +
 If set to false, the prometheus server extension will be enabled.
 
+. *provision_businesscentral*
++
+Optional; Default is true
++
+When set to false, Business Central will not be provisioned
+
+. *provision_kieserver*
++
+Optional; Default is true
++
+When is to false, neither KIE Server nor its corresponding postgresql database will not be provisioned
+
+. *provision_monitoring*
++
+Optional; Default is false
++
+If set to true, a link:https://access.redhat.com/containers/#/registry.access.redhat.com/rhpam-7/rhpam-businesscentral-monitoring-rhel8[PAM Business Central Monitoring] pod will be provisioned.
 
 . *rhsso_url*
 +
@@ -138,9 +155,7 @@ ansible-playbook playbooks/install.yml \
  -e kieserver_image_tag=1.2 \
  -e businesscentral_image=rhpam-bc-apd \
  -e kieserver_image_tag=1.2 \
- -e external_kieserver_image=quay.io/rhtgptetraining/rhpam-ks-apd:1.2 \
  -e businesscentral_image_tag=1.2 \
- -e external_businesscentral_image=quay.io/rhtgptetraining/rhpam-bc-apd:1.2 \
  -e PROMETHEUS_SERVER_EXT_DISABLED=$PROMETHEUS_SERVER_EXT_DISABLED \
  -e rhsso_url=$rhsso_url \
  -e install_tools=false \

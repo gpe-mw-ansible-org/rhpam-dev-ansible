@@ -17,19 +17,33 @@ businesscentral_java_max_mem_ratio: 60
 businesscentral_java_initial_mem_ratio: 0
 businesscentral_gc_max_metaspace_size: 500
 businesscentral_java_opts_append: "-Dorg.uberfire.nio.git.ssh.algorithm=RSA"
+businesscentral_pvc_name: "{{ businesscentral_application_name }}-claim"
+businesscentral_pvc_volume_capacity: "1Gi"
+
+
+businessmonitoring_application_name: "{{ application_name }}-monitoring"
+businessmonitoring_image_namespace: openshift
+businessmonitoring_image: rhpam-monitoring-apd
+businessmonitoring_image_tag: 1.3
+businessmonitoring_cpu_request: 200m
+businessmonitoring_memory_request: 3Gi
+businessmonitoring_cpu_limit: 2000m
+businessmonitoring_memory_limit: 3Gi
+businessmonitoring_java_max_mem_ratio: 60
+businessmonitoring_java_initial_mem_ratio: 0
+businessmonitoring_gc_max_metaspace_size: 500
+businessmonitoring_java_opts_append: "-Dorg.uberfire.nio.git.ssh.algorithm=RSA"
+businessmonitoring_pvc_name: "{{ businessmonitoring_application_name }}-claim"
+businessmonitoring_pvc_volume_capacity: "1Gi"
+bc_monitoring_template_yaml: rhpam-monitoring.yaml
 
 kie_server_controller_prefer_kieserver_service: "false"
 kie_server_controller_template_cache_ttl: "60000"
 kie_workbench_controller_openshift_enabled: "false"
 
-businesscentral_pvc_name: "{{ businesscentral_application_name }}-claim"
-businesscentral_pvc_volume_capacity: "1Gi"
-
 kieserver_image_namespace: openshift
 kieserver_image: rhpam74-kieserver-openshift
 kieserver_image_tag: latest
-external_kieserver_image: quay.io/rhtgptetraining/rhpam-ks-apd:latest
-external_businesscentral_image: quay.io/rhtgptetraining/rhpam-bc-apd:latest
 
 kieserver_cpu_request: 200m
 kieserver_memory_request: 1Gi
@@ -58,6 +72,10 @@ kieserver_controller_protocol: ws
 kieserver_host: "{{ kieserver_application_name }}"
 kieserver_port: 8080
 kieserver_protocol: http
+
+custom_kieserver_image: quay.io/rhtgptetraining/rhpam-ks-apd:1.2
+custom_businesscentral_image: quay.io/rhtgptetraining/rhpam-bc-apd:1.2
+custom_businessmonitoring_image: "quay.io/rhtgptetraining/{{ businessmonitoring_image }}:{{ businessmonitoring_image_tag }}"
 
 nexus_host: "{{ nexus_app }}.{{ project_nexus }}.svc"
 nexus_port: 8081
