@@ -6,9 +6,10 @@ kieserver_application_name: "{{ application_name }}-kieserver"
 
 service_account: "{{ application_name }}-rhpamsvc"
 
+
+businesscentral_image: rhpam-businesscentral-rhel8
+businesscentral_image_tag: 7.6.0-2
 businesscentral_image_namespace: openshift
-businesscentral_image: rhpam74-businesscentral-openshift
-businesscentral_image_tag: 1.0
 business_central_cpu_request: 200m
 businesscentral_memory_request: 1Gi
 businesscentral_cpu_limit: 2000m
@@ -19,12 +20,13 @@ businesscentral_gc_max_metaspace_size: 500
 businesscentral_java_opts_append: "-Dorg.uberfire.nio.git.ssh.algorithm=RSA"
 businesscentral_pvc_name: "{{ businesscentral_application_name }}-claim"
 businesscentral_pvc_volume_capacity: "1Gi"
+bc_template_yaml: rhpam-dev-business-central.yaml
 
 
 businessmonitoring_application_name: "{{ application_name }}-monitoring"
 businessmonitoring_image_namespace: openshift
-businessmonitoring_image: rhpam-monitoring-apd
-businessmonitoring_image_tag: 1.3
+businessmonitoring_image: rhpam-businesscentral-monitoring-rhel8
+businessmonitoring_image_tag: 7.6.0-2
 businessmonitoring_cpu_request: 200m
 businessmonitoring_memory_request: 3Gi
 businessmonitoring_cpu_limit: 2000m
@@ -42,8 +44,8 @@ kie_server_controller_template_cache_ttl: "60000"
 kie_workbench_controller_openshift_enabled: "false"
 
 kieserver_image_namespace: openshift
-kieserver_image: rhpam74-kieserver-openshift
-kieserver_image_tag: latest
+kieserver_image: rhpam-kieserver-rhel8
+kieserver_image_tag: 7.6.0-2
 
 kieserver_cpu_request: 200m
 kieserver_memory_request: 1Gi
@@ -72,10 +74,16 @@ kieserver_controller_protocol: ws
 kieserver_host: "{{ kieserver_application_name }}"
 kieserver_port: 8080
 kieserver_protocol: http
+ks_template_yaml: rhpam-dev-kieserver.yaml
 
-custom_kieserver_image: quay.io/rhtgptetraining/rhpam-ks-apd:1.2
-custom_businesscentral_image: quay.io/rhtgptetraining/rhpam-bc-apd:1.2
-custom_businessmonitoring_image: "quay.io/rhtgptetraining/{{ businessmonitoring_image }}:{{ businessmonitoring_image_tag }}"
+
+
+custom_kieserver_image: rhpam-ks-apd
+custom_kieserver_image_tag: 1.3
+custom_businesscentral_image: rhpam-bc-apd
+custom_businesscentral_image_tag: 1.3
+custom_businessmonitoring_image: rhpam-monitoring-apd
+customerbusinessmontoring_image_tag: 1.3
 
 nexus_host: "{{ nexus_app }}.{{ project_nexus }}.svc"
 nexus_port: 8081

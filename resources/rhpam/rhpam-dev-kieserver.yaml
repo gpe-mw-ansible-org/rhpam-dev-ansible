@@ -34,6 +34,8 @@ items:
       targetPort: http
     tls:
       termination: edge
+
+# NOTE:  Does not include kieserver-keystore-volume volume mount as recommended by: https://red.ht/36vlJ9d
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
@@ -41,9 +43,15 @@ items:
     labels:
       app: "{{ application_name }}"
       service: "{{ kieserver_application_name }}"
+      services.server.kie.org/kie-server-id: "{{ kieserver_application_name }}"
+    annotations:
+      template.alpha.openshift.io/wait-for-ready: "true"
   spec:
     strategy:
-      type: Recreate
+      rollingParams:
+        maxSurge: 100%
+        maxUnavailable: 0
+      type: Rolling
     triggers:
     - type: ImageChange
       imageChangeParams:
@@ -66,13 +74,25 @@ items:
           deploymentConfig: "{{ kieserver_application_name }}"
           app: "{{ application_name }}"
           service: "{{ kieserver_application_name }}"
+          services.server.kie.org/kie-server-id: "{{ kieserver_application_name }}"
       spec:
         serviceAccountName: "{{ service_account }}"
-        terminationGracePeriodSeconds: 60
+        terminationGracePeriodSeconds: 90
         containers:
         - name: "{{ kieserver_application_name }}"
           image: {{ kieserver_image }}
           imagePullPolicy: Always
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                - /bin/sh
+                - /opt/eap/bin/launch/jboss-kie-kieserver-hooks.sh
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - /opt/eap/bin/launch/jboss-kie-kieserver-hooks.sh
           resources:
             requests:
               cpu: "{{ kieserver_cpu_request }}"
@@ -192,6 +212,27 @@ items:
             value: "{{ nexus_port }}"
           - name: EXTERNAL_MAVEN_REPO_PATH
             value: "{{ nexus_path }}"
+          - name: SSO_URL
+            value: "{{ rhsso_url }}"
+          - name: SSO_OPENIDCONNECT_DEPLOYMENTS
+            value: "ROOT.war"
+          - name: SSO_REALM
+            value: "{{ sso_realm }}"
+          - name: SSO_USERNAME
+            value: "{{ sso_username }}"
+          - name: SSO_PASSWORD
+            value: "{{ sso_password }}"
+          - name: SSO_DISABLE_SSL_CERTIFICATE_VALIDATION
+            value: "{{ sso_disable_ssl_certificate_validation }}"
+          - name: SSO_CLIENT
+            value: "{{ kie_server_sso_client }}"
+          - name: SSO_SECRET
+            value: "{{ kie_server_sso_secret }}"
+          - name: SSO_ENABLE_CORS
+            value: "true"
+          - name: SSO_PRINCIPAL_ATTRIBUTE
+            value: "preferred_username"
+
 
           # Default for org.kie-mail.session = java:/jbpmMailSession
           # Will switch back to Default since current approach is to add a postfix based smtp relay as a sidecar listening on localhost:25
@@ -199,3 +240,4 @@ items:
             value: " -Dorg.kie.mail.session=java:jboss/mail/Default"
           - name: PROMETHEUS_SERVER_EXT_DISABLED
             value: "{{ PROMETHEUS_SERVER_EXT_DISABLED }}"
+

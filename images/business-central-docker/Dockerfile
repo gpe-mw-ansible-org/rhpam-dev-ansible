@@ -1,7 +1,12 @@
-FROM registry.redhat.io/rhpam-7/rhpam-businesscentral-rhel8:7.5.1-1
+# podman build --rm -t quay.io/rhtgptetraining/rhpam-bc-apd:1.3 .
+# podman push quay.io/rhtgptetraining/rhpam-bc-apd:1.3
+
+FROM registry.redhat.io/rhpam-7/rhpam-businesscentral-rhel8:7.6.0-2
 USER root
 RUN chown jboss:jboss -R /home/jboss
 RUN chmod -R 777 /home/jboss
+
+# These are users that are in addition to the admin user set by KIE_ADMIN_USER / KIE_ADMIN_PWD env variables in the PAM container
 RUN /opt/eap/bin/add-user.sh -a -u 'user1' -p 'bpms' -g 'user,kie-server,rest-task,rest-query,agent'
 RUN /opt/eap/bin/add-user.sh -a -u 'jboss' -p 'bpms' -g 'admin,analyst,user,kie-server,rest-all,agent'
 RUN /opt/eap/bin/add-user.sh -a -u 'busadmin' -p 'bpms' -g 'Administrators,analyst,user,kie-server,rest-all'
