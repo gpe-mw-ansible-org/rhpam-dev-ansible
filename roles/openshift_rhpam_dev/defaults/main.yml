@@ -93,7 +93,7 @@ custom_businesscentral_image_tag: 1.3
 # The default value is true. 
 # Enables managed "free-form" deployment
 # Sets the following system property:   org.kie.workbench.controller.openshift.enabled
-kie_workbench_controller_openshift_enabled: true
+kie_workbench_controller_openshift_enabled: false
 
  
 # If set to true, turns on KIE server global discovery feature (Sets the org.kie.server.controller.openshift.global.discovery.enabled system property)
