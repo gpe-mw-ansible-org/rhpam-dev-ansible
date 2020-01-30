@@ -32,8 +32,9 @@
     namespace: "{{ ocp_project }}"
 
 # Need to support https://github.com/jboss-container-images/jboss-eap-modules/blob/EAP_725_CR2_S390x/os-eap-sso/added/keycloak.sh#L493-L520
+# Changed to edit privledges so that KIE Controller create a configmap to store kie-server-state
 - name: "enable the following service account with view role to allow ability to query kube API for routes;  {{ service_account }}"
-  shell: "{{ openshift_cli }} adm policy add-role-to-user view -z {{ service_account }} -n {{ ocp_project }}"
+  shell: "{{ openshift_cli }} adm policy add-role-to-user edit -z {{ service_account }} -n {{ ocp_project }}"
 
 
 ##########         Business Central       ###########  
@@ -228,6 +229,17 @@
       shell: "{{ openshift_cli }} rollout resume dc/{{ kieserver_application_name }} -n {{ ocp_project }}"
   
     when: ks_result.ansible_module_results.stderr is defined and ks_result.ansible_module_results.stderr != ""
+
+  - name: wait for kie-server to be ready
+    shell: "{{ openshift_cli }} get dc {{ kieserver_application_name }} -o template --template={{ json_template }} -n {{ ocp_project }}"
+    vars:
+      json_template: '\{\{.status.readyReplicas\}\}'
+    register: result
+    until: result.stdout == "1"
+    retries: 10
+    delay: 30
+    changed_when: false
+
   when: provision_kieserver|bool
 
 ################################################

@@ -86,7 +86,7 @@ items:
               memory: "{{ businessmonitoring_memory_limit }}"
           volumeMounts:
           - name: "{{ businessmonitoring_application_name }}-pvol"
-            mountPath: "/opt/eap/standalone/data/kie"
+            mountPath: "{{ bc_volume_mount_point }}"
           livenessProbe:
             exec:
               command:

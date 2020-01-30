@@ -92,12 +92,6 @@ When set to false, the _pam-7-tools-$userId_ namespace is not created and corres
 Optional.  Default = rhpam-dev-{{ ocp_user }}
 Name of project where KIE Server image stream resides.
 
-. *PROMETHEUS_SERVER_EXT_DISABLED*
-+
-Optional. Default = true
-+
-If set to false, the prometheus server extension will be enabled.
-
 . *provision_businesscentral*
 +
 Optional; Default is true
@@ -164,7 +158,6 @@ ansible-playbook playbooks/install.yml \
  -e businesscentral_image=rhpam-bc-apd \
  -e kieserver_image_tag=1.2 \
  -e businesscentral_image_tag=1.2 \
- -e PROMETHEUS_SERVER_EXT_DISABLED=$PROMETHEUS_SERVER_EXT_DISABLED \
  -e rhsso_url=$rhsso_url \
  -e install_tools=false \
  -e seq_start=1 -e seq_end=1

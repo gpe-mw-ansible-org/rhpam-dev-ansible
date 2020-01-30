@@ -86,7 +86,7 @@ items:
               memory: "{{ businesscentral_memory_limit }}"
           volumeMounts:
           - name: "{{ businesscentral_application_name }}-pvol"
-            mountPath: "/opt/kie/data"
+            mountPath: "{{ bc_volume_mount_point }}"
           livenessProbe:
             exec:
               command:
@@ -126,42 +126,50 @@ items:
             value: "{{ businesscentral_java_initial_mem_ratio }}"
           - name: GC_MAX_METASPACE_SIZE
             value: "{{ businesscentral_gc_max_metaspace_size }}"            
+          - name: APPLICATION_USERS_PROPERTIES
+            value: "{{ bc_volume_mount_point }}/configuration/application-users.properties"
+          - name: APPLICATION_ROLES_PROPERTIES
+            value: "{{ bc_volume_mount_point }}/configuration/application-roles.properties"
           - name: KIE_ADMIN_USER
             value: "{{ kie_admin_user }}"
           - name: KIE_ADMIN_PWD
             value: "{{ kie_admin_password }}"
           - name: KIE_MBEANS
             value: "{{ kie_mbeans }}"
+          - name: KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED
+            value: "{{ kie_server_controller_openshift_global_discovery_enabled }}"
           - name: KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE
-            value: "{{ kie_server_controller_prefer_kieserver_service }}"
+            value: "{{ kie_server_controller_openshift_prefer_kieserver_service }}"
           - name: KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL
-            value: "{{ kie_server_controller_template_cache_ttl }}"
+            value: '{{ kie_server_controller_template_cache_ttl }}'
           - name: KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED
             value: "{{ kie_workbench_controller_openshift_enabled }}"
           - name: KIE_SERVER_CONTROLLER_USER
             value: "{{ kieserver_controller_user }}"
           - name: KIE_SERVER_CONTROLLER_PWD
             value: "{{ kieserver_controller_password }}"
+          - name: KIE_SERVER_CONTROLLER_TOKEN
+            value: "{{ kieserver_controller_token }}"
           - name: KIE_SERVER_USER
             value: "{{ kieserver_user }}"
           - name: KIE_SERVER_PWD
             value: "{{ kieserver_password }}"
+          - name: MAVEN_MIRROR_URL
+            value: "{{ maven_mirror_url }}"
+          - name: MAVEN_REPO_ID
+            value: "{{ maven_repo_id }}"
+          - name: MAVEN_REPO_URL
+            value: "{{ maven_repo_url }}"
+          - name: MAVEN_REPO_USERNAME
+            value: "{{ maven_repo_username }}"
+          - name: MAVEN_REPO_PASSWORD
+            value: "{{ maven_repo_password }}"
           - name: KIE_MAVEN_USER
             value: "{{ kie_maven_user }}"
           - name: KIE_MAVEN_PWD
             value: "{{ kie_maven_password }}"
-          - name: ADMIN_USERNAME
-            value: "eapadmin"
-          - name: ADMIN_PASSWORD
-            value: "eapadmin1!"
-          - name: MAVEN_REPOS
-            value: "EXTERNAL"
-          - name: EXTERNAL_MAVEN_REPO_HOST
-            value: "{{ nexus_host }}"
-          - name: EXTERNAL_MAVEN_REPO_PORT
-            value: "{{ nexus_port }}"
-          - name: EXTERNAL_MAVEN_REPO_PATH
-            value: "{{ nexus_path }}"
+          - name: GIT_HOOKS_DIR
+            value: "{{ git_hooks_dir }}"
           - name: JAVA_OPTS_APPEND
             value: "{{ businesscentral_java_opts_append }}"
           - name: SSO_URL
