@@ -93,13 +93,13 @@ custom_businesscentral_image_tag: 1.3
 # The default value is true. 
 # Enables managed "free-form" deployment
 # Sets the following system property:   org.kie.workbench.controller.openshift.enabled
-kie_workbench_controller_openshift_enabled: false
+kie_workbench_controller_openshift_enabled: "false"
 
  
 # If set to true, turns on KIE server global discovery feature (Sets the org.kie.server.controller.openshift.global.discovery.enabled system property)
 #   https://bit.ly/2uK5cku  :  KieServerStateOpenShiftRepository.java
 # Default = false
-kie_server_controller_openshift_global_discovery_enabled: false
+kie_server_controller_openshift_global_discovery_enabled: "false"
 
 
 # Sets the org.kie.server.controller.template.cache.ttl system property in BC and BC Monitoring
@@ -109,11 +109,11 @@ kie_server_controller_template_cache_ttl: 60000
 # If OpenShift integration of Business Central is turned on, setting this parameter to true enables connection to KIE Server via an OpenShift internal Service endpoint.
 # (Sets the org.kie.server.controller.openshift.prefer.kieserver.service system property)
 # Default = true
-kie_server_controller_openshift_prefer_kieserver_service: true
+kie_server_controller_openshift_prefer_kieserver_service: "true"
 
 # If OpenShift integration of Business Central is turned on, setting this parameter to true  enables connection to KIE Server via an OpenShift internal Service endpoint. 
 # Sets the org.kie.server.controller.openshift.prefer.kieserver.service system property
-kie_server_controller_prefer_kieserver_service: true
+kie_server_controller_prefer_kieserver_service: "true"
 
 # Sets the org.kie.server.controller.user system property
 # The user name used to connect to the KIE controller REST API.
@@ -151,7 +151,7 @@ kieserver_controller_protocol: ws
 # (Sets the org.kie.server.mode system property)
 kie_server_mode: PRODUCTION
 
-drools_server_filter_classes: true
+drools_server_filter_classes: "true"
 
 # KIE Server Container deployment configuration with optional alias. Format: containerId=groupId:artifactId:version|c2(alias2)=g2:a2:v2
 #   example: rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.6.0-SNAPSHOT
@@ -164,7 +164,7 @@ maven_mirror_of:
 
 # Disable management api and don't allow KIE containers to be deployed/undeployed or started/stopped
 # Sets the property org.kie.server.mgmt.api.disabled to true and org.kie.server.startup.strategy to LocalContainersStartupStrategy.
-kie_server_mgmt_disabled: false
+kie_server_mgmt_disabled: "false"
 
 # KIE server persistence datasource. (Sets the org.kie.server.persistence.ds system property)
 kie_server_persistence_ds: "java:/jboss/datasources/rhpam"
@@ -189,9 +189,9 @@ kieserver_java_max_mem_ratio: 60
 kieserver_java_initial_mem_ratio: 0
 kieserver_gc_max_metaspace_size: 500
 
-kieserver_bypass_auth_user: false
+kieserver_bypass_auth_user: "false"
 
-prometheus_server_ext_disabled: true
+prometheus_server_ext_disabled: "true"
 
 ks_template_yaml: rhpam-dev-kieserver.yaml
 custom_kieserver_image: rhpam-ks-apd
