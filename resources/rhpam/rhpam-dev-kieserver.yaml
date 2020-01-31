@@ -101,17 +101,21 @@ items:
         - name: "{{ kieserver_application_name }}"
           image: {{ kieserver_image }}
           imagePullPolicy: Always
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                - /bin/sh
-                - /opt/eap/bin/launch/jboss-kie-kieserver-hooks.sh
-            preStop:
-              exec:
-                command:
-                - /bin/sh
-                - /opt/eap/bin/launch/jboss-kie-kieserver-hooks.sh
+
+#         Only used with "freeform" KIE-Server deployment where org.kie.server.startup.strategy=OpenShiftStartupStrategy
+#         Works in conjunction with the following env var:          WORKBENCH_SERVICE_NAME
+#         lifecycle:
+#           postStart:
+#             exec:
+#               command:
+#               - /bin/sh
+#               - /opt/eap/bin/launch/jboss-kie-kieserver-hooks.sh
+#           preStop:
+#             exec:
+#               command:
+#               - /bin/sh
+#               - /opt/eap/bin/launch/jboss-kie-kieserver-hooks.sh
+
           resources:
             requests:
               cpu: "{{ kieserver_cpu_request }}"
@@ -156,6 +160,8 @@ items:
             value: "{{ kieserver_java_initial_mem_ratio }}"
           - name: GC_MAX_METASPACE_SIZE
             value: "{{ kieserver_gc_max_metaspace_size }}"
+#          - name: WORKBENCH_SERVICE_NAME
+#            value: "{{ workbench_service_name }}"
           - name: KIE_ADMIN_USER
             value: "{{ kie_admin_user }}"
           - name: KIE_ADMIN_PWD
