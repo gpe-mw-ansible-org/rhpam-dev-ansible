@@ -1,14 +1,64 @@
 ---
 
+#####       Common          ############
 application_name: rhpam
-businesscentral_application_name: "{{ application_name }}-bc"
-kieserver_application_name: "{{ application_name }}-kieserver"
-
 service_account: "{{ application_name }}-rhpamsvc"
 
+# Admin user for Business Central, Business Central Monitoring and KIE-Server 
+kie_admin_user: adminUser
+kie_admin_password: admin1!
+
+# KIE server mbeans enabled/disabled. (Sets the kie.mbeans and kie.scanner.mbeans system properties)
+#   Enables support for JMX monitoring and management on KieScanner and KieContainer.
+kie_mbeans: enabled
+
+# Sets the org.kie.server.user system property
+# User name used to connect to the KIE Server from clients such as the KIE controller
+# required when running in managed mode.
+kieserver_user: executionUser
+kieserver_password: execution1!
+
+# Maven mirror that Business Central and KIE Server use.
+# If you configure a mirror, this mirror must contain all artifacts that are required for deploying your services
+maven_mirror_url:
+
+# The id to use for the maven repository. If set, it can be excluded from the optionally configured mirror by adding it to MAVEN_MIRROR_OF.
+#   ie: external:*,!repo-rhpamcentr,!repo-custom.
+# If MAVEN_MIRROR_URL is set but MAVEN_MIRROR_ID is not set, an id will be generated randomly, but won't be usable in MAVEN_MIRROR_OF.
+maven_repo_id:
+
+# Fully qualified URL to a Maven repository or service. ie:  http://nexus.nexus-project.svc.cluster.local:8081/nexus/content/groups/public/
+maven_repo_url: "http://{{ nexus_app }}.{{ project_nexus }}.svc:8081/content/groups/public/"
+
+maven_repo_username:
+maven_repo_password:
+
+# Mount point of PVC volume for both BC and BC-Monitoring
+bc_volume_mount_point: /opt/kie/data
+
+
+# Default value is false in which case PAM images from registry.redhat.io will be used.
+# If set to true, then custom images for Business-Central and KIE Server will be used.
+# The images are configured with users and groups required to support GPTE courses and labs.
+use_custom_pam: false
+
+
+#########################################
+
+
+
+
+
+######      business central    ######
+
+# reference:
+#   https://docs.jboss.org/jbpm/release/latest/jbpm-docs/html_single/#business-central-system-properties-ref
+#   https://docs.jboss.org/drools/release/latest/drools-docs/html_single/index.html
+
+businesscentral_application_name: "{{ application_name }}-bc"
+businesscentral_image: rhpam-businesscentral-rhel8
+businesscentral_image_tag: 7.6.0-2
 businesscentral_image_namespace: openshift
-businesscentral_image: rhpam74-businesscentral-openshift
-businesscentral_image_tag: 1.0
 business_central_cpu_request: 200m
 businesscentral_memory_request: 1Gi
 businesscentral_cpu_limit: 2000m
@@ -19,31 +69,130 @@ businesscentral_gc_max_metaspace_size: 500
 businesscentral_java_opts_append: "-Dorg.uberfire.nio.git.ssh.algorithm=RSA"
 businesscentral_pvc_name: "{{ businesscentral_application_name }}-claim"
 businesscentral_pvc_volume_capacity: "1Gi"
+bc_template_yaml: rhpam-dev-business-central.yaml
+
+# User name for accessing the Maven service hosted by Business Central
+kie_maven_user: adminUser
+kie_maven_password: admin1!
 
 
-businessmonitoring_application_name: "{{ application_name }}-monitoring"
-businessmonitoring_image_namespace: openshift
-businessmonitoring_image: rhpam-monitoring-apd
-businessmonitoring_image_tag: 1.3
-businessmonitoring_cpu_request: 200m
-businessmonitoring_memory_request: 3Gi
-businessmonitoring_cpu_limit: 2000m
-businessmonitoring_memory_limit: 3Gi
-businessmonitoring_java_max_mem_ratio: 60
-businessmonitoring_java_initial_mem_ratio: 0
-businessmonitoring_gc_max_metaspace_size: 500
-businessmonitoring_java_opts_append: "-Dorg.uberfire.nio.git.ssh.algorithm=RSA"
-businessmonitoring_pvc_name: "{{ businessmonitoring_application_name }}-claim"
-businessmonitoring_pvc_volume_capacity: "1Gi"
-bc_monitoring_template_yaml: rhpam-monitoring.yaml
+git_hooks_dir: "{{ bc_volume_mount_point }}/git_hooks"
 
-kie_server_controller_prefer_kieserver_service: "false"
-kie_server_controller_template_cache_ttl: "60000"
-kie_workbench_controller_openshift_enabled: "false"
+custom_businesscentral_image: rhpam-bc-apd
+custom_businesscentral_image_tag: 1.3
+
+########################################
+
+
+
+
+#######     KIE Server Controller       #########
+#
+# This parameter must be set to true to enable OpenShiftStartupStrategy
+# With OpenShift integration, the KIE-Controller connects to all Process Servers in the same namespace automatically if OpenShift Startup Strategy is enabled on the Process Servers. 
+# The default value is true. 
+# Enables managed "free-form" deployment
+# Sets the following system properties:   
+#       org.kie.workbench.controller.openshift.enabled=true
+#       org.kie.controller.ping.alive.disable=true
+# Reference:
+#     https://issues.redhat.com/browse/JBPM-7834
+#     jboss-kie-modules/jboss-kie-workbench/added/launch/jboss-kie-workbench.sh
+# Additional notes:
+#   You must provide a Maven repository with the processes (KJAR files) that you want to deploy on the servers. 
+#   Your integration process must ensure that the required versions of the processes are uploaded to the Maven repository. 
+#   You can use Business Central in a development environment to create the processes and upload them to the Maven repository.
+kie_workbench_controller_openshift_enabled: "true"
+
+ 
+# If set to true, turns on KIE server global discovery feature (Sets the org.kie.server.controller.openshift.global.discovery.enabled system property)
+# Default = false
+# Reference:
+#   https://bit.ly/2uK5cku  :  KieServerStateOpenShiftRepository.java
+#   jboss-kie-modules/jboss-kie-workbench/added/launch/jboss-kie-workbench.sh
+kie_server_controller_openshift_global_discovery_enabled: "false"
+
+
+# Sets the org.kie.server.controller.template.cache.ttl system property in BC and BC Monitoring
+# Default = 60000
+kie_server_controller_template_cache_ttl: 60000
+
+# If OpenShift integration of Business Central is turned on, setting this parameter to true enables connection to KIE Server via an OpenShift internal Service endpoint.
+# (Sets the org.kie.server.controller.openshift.prefer.kieserver.service system property)
+# Default = true
+kie_server_controller_openshift_prefer_kieserver_service: "true"
+
+# Sets the org.kie.server.controller.user system property
+# The user name used to connect to the KIE controller REST API.
+# Only used in KIE-Server with ControllerBasedStartupStrategy startup strategy
+kieserver_controller_user: controllerUser
+kieserver_controller_password: controller1!
+
+# KIE server controller token for bearer authentication
+# Sets the org.kie.server.controller.token system property
+# Only used in KIE-Server with ControllerBasedStartupStrategy startup strategy
+kieserver_controller_token:
+#################################################
+
+
+
+
+########            KIE Server          ############
+kieserver_application_name: "{{ application_name }}-kieserver"
+
+# https://docs.jboss.org/jbpm/release/latest/jbpm-docs/html_single/#_pluggable_startup_strategy_in_kie_server
+# Values:
+#     ControllerBasedStartupStrategy        (default)
+#     LocalContainersStartupStrategy
+#     OpenShiftStartupStrategy
+#       Used to enable BC to discover and connect the KIE-Servers automatically using OpenShift APIs
+#       Enables managed "free-form" deployment
+#       Log statements in KIE-Server:
+#           org.kie.server.services.openshift.impl.OpenShiftStartupStrategy] (Thread-150) Watching ConfigMap in namespace: [rhpam-dev-user4]
+#           org.kie.server.services.openshift.impl.OpenShiftStartupStrategy] (Thread-150) Watcher created
+#           org.kie.server.services.openshift.impl.OpenShiftStartupStrategy] (Thread-150) WatchRunner thread run
+# Sets the following system property:  org.kie.server.startup.strategy
+kie_server_startup_strategy: OpenShiftStartupStrategy
+
+# Only used with ControllerBasedStartupStrategy startup strategy
+kieserver_controller_protocol: ws
+
+# Valid values are 'DEVELOPMENT' or 'PRODUCTION'.
+# In production mode, you can not deploy to KIE Servier any SNAPSHOT versions of KIE Projects nor KIE Projects that are in Development Mode (ie: project -> settings -> general settings) 
+# You can also not change the version of an artifact in an existing container.
+# To deploy SNAPSHOT versions or to change versions of an artifact in an existing container, set this parameter to DEVELOPMENT
+# (Sets the org.kie.server.mode system property)
+kie_server_mode: DEVELOPMENT
+
+drools_server_filter_classes: "true"
+
+# KIE Server Container deployment configuration with optional alias. Format: containerId=groupId:artifactId:version|c2(alias2)=g2:a2:v2
+#   example: rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.6.0-SNAPSHOT
+# Not used with a managed "fixed" kie-server deployment
+# kie_server_container_deployment:
+
+# Maven mirror configuration for KIE server
+maven_mirror_of:
+
+
+# Disable management api and don't allow KIE containers to be deployed/undeployed or started/stopped
+# Sets the property org.kie.server.mgmt.api.disabled to true and org.kie.server.startup.strategy to LocalContainersStartupStrategy.
+kie_server_mgmt_disabled: "false"
+
+# KIE server persistence datasource. (Sets the org.kie.server.persistence.ds system property)
+kie_server_persistence_ds: "java:/jboss/datasources/rhpam"
+
+# Timer service data store refresh interval (in milliseconds)
+# Sets refresh-interval for the EJB timer database data-store service
+time_service_data_store_refresh_interval:
+
+# Default for org.kie-mail.session = java:/jbpmMailSession
+# Will switch back to Default since current approach is to add a postfix based smtp relay as a sidecar listening on localhost:25
+kieserver_java_opts_append: " -Dorg.kie.mail.session=java:jboss/mail/Default"
 
 kieserver_image_namespace: openshift
-kieserver_image: rhpam74-kieserver-openshift
-kieserver_image_tag: latest
+kieserver_image: rhpam-kieserver-rhel8
+kieserver_image_tag: 7.6.0-2
 
 kieserver_cpu_request: 200m
 kieserver_memory_request: 1Gi
@@ -53,34 +202,25 @@ kieserver_java_max_mem_ratio: 60
 kieserver_java_initial_mem_ratio: 0
 kieserver_gc_max_metaspace_size: 500
 
-kie_admin_user: adminUser
-kie_admin_password: admin1!
-kieserver_controller_user: controllerUser
-kieserver_controller_password: controller1!
-kieserver_user: executionUser
-kieserver_password: execution1!
-kie_maven_user: adminUser
-kie_maven_password: admin1!
-kie_mbeans: enabled
+kieserver_bypass_auth_user: "false"
 
-kieserver_id: kieserver-dev
+prometheus_server_ext_disabled: "true"
 
-drools_server_filter_classes: true
-kieserver_bypass_auth_user: false
+ks_template_yaml: rhpam-dev-kieserver.yaml
+custom_kieserver_image: rhpam-ks-apd
+custom_kieserver_image_tag: 1.3
 
-kieserver_controller_protocol: ws
-kieserver_host: "{{ kieserver_application_name }}"
-kieserver_port: 8080
-kieserver_protocol: http
 
-custom_kieserver_image: quay.io/rhtgptetraining/rhpam-ks-apd:1.2
-custom_businesscentral_image: quay.io/rhtgptetraining/rhpam-bc-apd:1.2
-custom_businessmonitoring_image: "quay.io/rhtgptetraining/{{ businessmonitoring_image }}:{{ businessmonitoring_image_tag }}"
+# Used only with a managed "freeform" kie-server deployment where org.kie.server.startup.strategy=OpenShiftStartupStrategy in kie-server
+# Triggers functions in:    jboss-kie-modules/jboss-kie-kieserver/added/launch/jboss-kie-kieserver-hooks.sh
+#   Creates configmap with following name: rhpam-kieserver
+workbench_service_name: "{{ businesscentral_application_name }}"
 
-nexus_host: "{{ nexus_app }}.{{ project_nexus }}.svc"
-nexus_port: 8081
-nexus_path: content/groups/public/
+###########################################################
 
+
+
+#########       KIE-Server Database         ###############
 postgresql_template: "{{ resources_dir }}/rhpam-dev-postgresql.yaml"
 postgresql_application_name: "{{ application_name }}-postgresql"
 postgresql_credentials_secret: "{{ postgresql_application_name }}"
@@ -99,10 +239,31 @@ psql_cpu_request: 250m
 psql_memory_request: 256Mi
 psql_cpu_limit: 500m
 psql_memory_limit: 512Mi
+####################################################
 
-use_custom_pam: false
 
-PROMETHEUS_SERVER_EXT_DISABLED: true
+
+####        Business Central Monitoring         ##########
+businessmonitoring_application_name: "{{ application_name }}-monitoring"
+businessmonitoring_image_namespace: openshift
+businessmonitoring_image: rhpam-businesscentral-monitoring-rhel8
+businessmonitoring_image_tag: 7.6.0-2
+businessmonitoring_cpu_request: 200m
+businessmonitoring_memory_request: 3Gi
+businessmonitoring_cpu_limit: 2000m
+businessmonitoring_memory_limit: 3Gi
+businessmonitoring_java_max_mem_ratio: 60
+businessmonitoring_java_initial_mem_ratio: 0
+businessmonitoring_gc_max_metaspace_size: 500
+businessmonitoring_java_opts_append: "-Dorg.uberfire.nio.git.ssh.algorithm=RSA"
+businessmonitoring_pvc_name: "{{ businessmonitoring_application_name }}-claim"
+businessmonitoring_pvc_volume_capacity: "1Gi"
+bc_monitoring_template_yaml: rhpam-monitoring.yaml
+
+custom_businessmonitoring_image: rhpam-monitoring-apd
+customerbusinessmontoring_image_tag: 1.3
+###########################################
+
 
 
 # ##########   RH-SSO Integration    ###############

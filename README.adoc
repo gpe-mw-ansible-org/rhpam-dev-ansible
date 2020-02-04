@@ -17,11 +17,11 @@ The following diagram depicts the OpenShift project and corresponding components
 
 image::images/arch_topology.png[]
 
-. *pam7-tools-$guid*
+. *pam7-tools-{{ ocp_user }}*
 +
 This OCP project contains a Nexus server and a _pgadmin4_ server.
 
-. *rhpam-dev-$guid*
+. *rhpam-dev-{{ ocp_user }}*
 +
 This OCP project contains the PAM Business Central and PAM Kie-server.
 The PAM Kie-server stores the state of long running business processes in the _rhpam-postgresql_ database. 
@@ -51,8 +51,12 @@ The default values of these variables can all be over-written at the _ansible-pl
 
 == Environment Variables
 
-kieserver_image_namespace=rhpam-dev-$guid
-businesscentral_image_namespace=rhpam-dev-$guid
+
+. *businesscentral_image_namespace*
++
+Optional.  Default = rhpam-dev-{{ ocp_user }}
+Name of project where Business Central image stream resides.
+
 
 . *configure_smtp_relay*
 +
@@ -83,11 +87,10 @@ Optional. Default=true
 +
 When set to false, the _pam-7-tools-$userId_ namespace is not created and corresponding Nexus and PostgreSQL Admin Console are not provisioned.
 
-. *PROMETHEUS_SERVER_EXT_DISABLED*
+. *kieserver_image_namespace*
 +
-Optional. Default = true
-+
-If set to false, the prometheus server extension will be enabled.
+Optional.  Default = rhpam-dev-{{ ocp_user }}
+Name of project where KIE Server image stream resides.
 
 . *provision_businesscentral*
 +
@@ -119,7 +122,7 @@ If set, BC and KIE-Server will be configured to participate in OpenID Connect (O
 +
 Optional.
 Set this variable when needing to provision a lab environment for multiple students on an existing OCP environment.
-Specify first rhpam env to manage; default = 1
+Specify first rhpam env to manage; default = 1 ;  in which a project with the following name will be created: _rhpam-dev-user1_.
 
 . *seq_end*
 +
@@ -128,6 +131,9 @@ Optional.  Specify last rhpam env to manage; default = 1
 . *use_cluster_quota*
 +
 Optional. Default value is: true
++
+When true, creates a clusterquota that is assigned to the owner userId (ie:  user1) of the project where the RH-PAM deployment resides.
+The values of this clusterquota are found in: _roles/openshift_quota/defaults/main.yml_
 
 . *use_custom_pam*
 +
@@ -137,10 +143,6 @@ Default value is false in which case PAM images from registry.redhat.io will be 
 +
 If set to true, then custom images for Business-Central and KIE Server will be used.
 The images are configured with users and groups required to support GPTE courses and labs.
-Specifically, the following custom images are derived from RHT RHPAM 7.2.x images:
-
-.. quay.io/btison/rhpam72-kieserver-openshift-gpte:1.1 
-.. quay.io/btison/rhpam72-businesscentral-openshift-gpte:1.1
 
 == Install Examples
 
@@ -156,7 +158,6 @@ ansible-playbook playbooks/install.yml \
  -e businesscentral_image=rhpam-bc-apd \
  -e kieserver_image_tag=1.2 \
  -e businesscentral_image_tag=1.2 \
- -e PROMETHEUS_SERVER_EXT_DISABLED=$PROMETHEUS_SERVER_EXT_DISABLED \
  -e rhsso_url=$rhsso_url \
  -e install_tools=false \
  -e seq_start=1 -e seq_end=1
@@ -169,7 +170,6 @@ ansible-playbook playbooks/install.yml \
 -----
 $ ansible-playbook playbooks/pgadmin4.yml \
     -e ocp_user=$ocp_user \
-    -e guid=$guid \
     -e use_cluster_quota=$use_cluster_quota
 -----
 
@@ -178,21 +178,18 @@ $ ansible-playbook playbooks/pgadmin4.yml \
 -----
 $ ansible-playbook playbooks/nexus2.yml \
     -e ocp_user=$ocp_user \
-    -e guid=$guid \
     -e use_cluster_quota=$use_cluster_quota
 -----
 
-. Provision PAM components
+. Provision Business Central (using custom GPTE images) only with no ClusterQuota
 +
 -----
 $ ansible-playbook playbooks/rhpam_dev.yml \
-    -e ocp_user=$ocp_user \
-    -e guid=$guid \
-    -e use_cluster_quota=$use_cluster_quota \
-    -e kieserver_image_namespace=$kieserver_image_namespace \
-    -e businesscentral_image_namespace=$businesscentral_image_namespace \
-    -e use_custom_pam=$use_custom_pam \
-    -e rhsso_url=$rhsso_url
+    -e ocp_user=user1 \
+    -e use_cluster_quota=false \
+    -e use_custom_pam=true \
+    -e provision_businesscentral=true \
+    -e provision_kieserver=false
 -----
 
 

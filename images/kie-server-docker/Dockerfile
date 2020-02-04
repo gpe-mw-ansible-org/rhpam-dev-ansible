@@ -1,8 +1,14 @@
-FROM registry.redhat.io/rhpam-7/rhpam-kieserver-rhel8::7.5.1-1
+# podman build --rm -t quay.io/rhtgptetraining/rhpam-ks-apd:1.3 .
+# podman push quay.io/rhtgptetraining/rhpam-ks-apd:1.3
+
+FROM registry.redhat.io/rhpam-7/rhpam-kieserver-rhel8:7.6.0-2
 
 # web services
+##  Source code:   https://github.com/gpe-mw-training/advanced-process-development-labs-etc
+##  After building, copy the two web artifacts into this same directory where the Dockerfile exists 
 COPY ./flight-service-1.0.war /opt/eap/standalone/deployments/
 COPY ./hotel-service-1.0.war /opt/eap/standalone/deployments/
+
 COPY ./user-info.properties /home/jboss/data/
 
 USER root

@@ -2,9 +2,16 @@
 
 - name: add custom pam image streams
   block:
-  - command: "oc import-image {{ custom_kieserver_image }} -n {{ kieserver_image_namespace }} --confirm"
-  - command: "oc import-image {{ custom_businesscentral_image }} -n {{ businesscentral_image_namespace }} --confirm"
-  - command: "oc import-image {{ custom_businessmonitoring_image }} -n {{ businessmonitoring_image_namespace }} --confirm"
+  - command: "oc import-image quay.io/rhtgptetraining/{{ custom_kieserver_image }} -n {{ kieserver_image_namespace }} --confirm --all=true"
+  - command: "oc import-image quay.io/rhtgptetraining/{{ custom_businesscentral_image }} -n {{ businesscentral_image_namespace }} --confirm --all=true"
+  - command: "oc import-image quay.io/rhtgptetraining/{{ custom_businessmonitoring_image }} -n {{ businessmonitoring_image_namespace }} --confirm --all=true"
+  - set_fact:
+      kieserver_image: "{{ custom_kieserver_image }}"
+      kieserver_image_tag: "{{ custom_kieserver_image_tag }}"
+      businesscentral_image: "{{ custom_businesscentral_image }}"
+      businesscentral_image_tag: "{{ custom_businesscentral_image_tag }}"
+      businessmonitoring_image: "{{ custom_businessmonitoring_image }}"
+      businessmonitoring_image_tag: "{{ customerbusinessmontoring_image_tag }}"
   when: use_custom_pam|bool
 
 
@@ -24,24 +31,10 @@
     name: "{{ service_account }}"
     namespace: "{{ ocp_project }}"
 
-- name: define template when using RH-SSO 
-  block:
-  - set_fact:
-      bc_template_yaml: rhpam-dev-business-central_sso.yaml
-      ks_template_yaml: rhpam-dev-kieserver_sso.yaml
-
-  # Need to support https://github.com/jboss-container-images/jboss-eap-modules/blob/EAP_725_CR2_S390x/os-eap-sso/added/keycloak.sh#L493-L520
-  - name: "enable the following service account with view role to allow ability to query kube API for routes;  {{ service_account }}"
-    shell: "{{ openshift_cli }} adm policy add-role-to-user view -z {{ service_account }} -n {{ ocp_project }}"
-  when: rhsso_url is defined
-
-- name: define template names when not using RH-SSO
-  block:
-  - set_fact:
-      bc_template_yaml: rhpam-dev-business-central.yaml
-      ks_template_yaml: rhpam-dev-kieserver.yaml
-  when: rhsso_url is not defined
-
+# Need to support https://github.com/jboss-container-images/jboss-eap-modules/blob/EAP_725_CR2_S390x/os-eap-sso/added/keycloak.sh#L493-L520
+# Changed to edit privledges so that KIE Controller create a configmap to store kie-server-state
+- name: "enable the following service account with view role to allow ability to query kube API for routes;  {{ service_account }}"
+  shell: "{{ openshift_cli }} adm policy add-role-to-user edit -z {{ service_account }} -n {{ ocp_project }}"
 
 
 ##########         Business Central       ###########  
@@ -236,6 +229,17 @@
       shell: "{{ openshift_cli }} rollout resume dc/{{ kieserver_application_name }} -n {{ ocp_project }}"
   
     when: ks_result.ansible_module_results.stderr is defined and ks_result.ansible_module_results.stderr != ""
+
+  - name: wait for kie-server to be ready
+    shell: "{{ openshift_cli }} get dc {{ kieserver_application_name }} -o template --template={{ json_template }} -n {{ ocp_project }}"
+    vars:
+      json_template: '\{\{.status.readyReplicas\}\}'
+    register: result
+    until: result.stdout == "1"
+    retries: 10
+    delay: 30
+    changed_when: false
+
   when: provision_kieserver|bool
 
 ################################################
