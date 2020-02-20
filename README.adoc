@@ -92,6 +92,12 @@ When set to false, the _pam-7-tools-$userId_ namespace is not created and corres
 Optional.  Default = rhpam-dev-{{ ocp_user }}
 Name of project where KIE Server image stream resides.
 
+. *kieserver_java_opts_append*
++
+Optional.  Default = -Dorg.kie.mail.session=java:jboss/mail/Default
++
+Used to add system properties to KIE-server 
+
 . *provision_businesscentral*
 +
 Optional; Default is true

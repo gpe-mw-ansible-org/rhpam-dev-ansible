@@ -149,7 +149,7 @@ kieserver_controller_protocol: ws
 # You can also not change the version of an artifact in an existing container.
 # To deploy SNAPSHOT versions or to change versions of an artifact in an existing container, set this parameter to DEVELOPMENT
 # (Sets the org.kie.server.mode system property)
-kie_server_mode: PRODUCTION
+kie_server_mode: DEVELOPMENT
 
 drools_server_filter_classes: "true"
 
