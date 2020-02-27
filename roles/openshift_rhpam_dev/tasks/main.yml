@@ -206,6 +206,100 @@
             }}]"
     
       when: configure_smtp_relay|bool
+
+    - name: "enable CORS on kie-server if value of rhsso_url is empty: {{ rhsso_url }}"
+      shell: |
+          {{ openshift_cli }} patch dc/{{ kieserver_application_name }} -n {{ ocp_project }} --type=json -p '[
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/1",
+                "value": {
+                    "name": "FILTERS",
+                    "value": "AC_ALLOW_ORIGIN,AC_ALLOW_METHODS,AC_ALLOW_HEADERS,AC_ALLOW_CREDENTIALS,AC_MAX_AGE"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/2",
+                "value": {
+                    "name": "AC_ALLOW_ORIGIN_FILTER_RESPONSE_HEADER_NAME",
+                    "value": "Access-Control-Allow-Origin"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/3",
+                "value": {
+                    "name": "AC_ALLOW_ORIGIN_FILTER_RESPONSE_HEADER_VALUE",
+                    "value": "*"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/4",
+                "value": {
+                    "name": "AC_ALLOW_METHODS_FILTER_RESPONSE_HEADER_NAME",
+                    "value": "Access-Control-Allow-Methods"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/5",
+                "value": {
+                    "name": "AC_ALLOW_METHODS_FILTER_RESPONSE_HEADER_VALUE",
+                    "value": "GET, POST, OPTIONS, PUT"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/6",
+                "value": {
+                    "name": "AC_ALLOW_HEADERS_FILTER_RESPONSE_HEADER_NAME",
+                    "value": "Access-Control-Allow-Headers"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/7",
+                "value": {
+                    "name": "AC_ALLOW_HEADERS_FILTER_RESPONSE_HEADER_VALUE",
+                    "value": "Accept, Authorization, Content-Type, X-Requested-With"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/8",
+                "value": {
+                    "name": "AC_ALLOW_CREDENTIALS_FILTER_RESPONSE_HEADER_NAME",
+                    "value": "Access-Control-Allow-Credentials"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/9",
+                "value": {
+                    "name": "AC_ALLOW_CREDENTIALS_FILTER_RESPONSE_HEADER_VALUE",
+                    "value": "true"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/10",
+                "value": {
+                    "name": "AC_MAX_AGE_FILTER_RESPONSE_HEADER_NAME",
+                    "value": "Access-Control-Max-Age"
+                }
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/11",
+                "value": {
+                    "name": "AC_MAX_AGE_FILTER_RESPONSE_HEADER_VALUE",
+                    "value": "1"
+                }
+            }]'
+      when: (rhsso_url is not defined or rhsso_url is none or rhsso_url|trim() == "")
+    
     
     - name: "enable smtp-relay sidecar (fake_smtp): {{ fake_smtp }}"
       block:
@@ -224,7 +318,7 @@
             }}]"
     
       when: fake_smtp|bool
-    
+
     - name: "resume kie-server"
       shell: "{{ openshift_cli }} rollout resume dc/{{ kieserver_application_name }} -n {{ ocp_project }}"
   
