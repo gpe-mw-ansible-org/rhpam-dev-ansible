@@ -172,6 +172,8 @@ items:
             value: "{{ git_hooks_dir }}"
           - name: JAVA_OPTS_APPEND
             value: "{{ businesscentral_java_opts_append }}"
+          - name: WORKBENCH_ROUTE_NAME
+            value: "{{ businesscentral_application_name }}"
           - name: SSO_URL
             value: "{{ rhsso_url }}"
           - name: SSO_OPENIDCONNECT_DEPLOYMENTS
