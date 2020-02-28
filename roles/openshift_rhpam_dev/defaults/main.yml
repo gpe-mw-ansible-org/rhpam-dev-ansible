@@ -203,12 +203,13 @@ custom_kieserver_image_tag: 1.3
 #   Creates configmap with following name:  
 workbench_service_name: "{{ businesscentral_application_name }}"
 
+use_ephemeral_postgresql: false
 ###########################################################
 
 
 
 #########       KIE-Server Database         ###############
-postgresql_template: "{{ resources_dir }}/rhpam-dev-postgresql.yaml"
+postgresql_template: "rhpam-dev-postgresql.yaml"
 postgresql_application_name: "{{ application_name }}-postgresql"
 postgresql_credentials_secret: "{{ postgresql_application_name }}"
 postgresql_init_configmap: "{{ postgresql_application_name }}-init"
