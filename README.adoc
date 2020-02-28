@@ -144,6 +144,10 @@ Default value is false in which case PAM images from registry.redhat.io will be 
 If set to true, then custom images for Business-Central and KIE Server will be used.
 The images are configured with users and groups required to support GPTE courses and labs.
 
+. *use_ephemeral_postgresql*
++
+Default value is false in which case PostgreSQL (for KIE-Server) uses a persistent volume claim.
+
 == Install Examples
 
 === All Components
@@ -157,6 +161,7 @@ ansible-playbook playbooks/install.yml \
  -e kieserver_image_tag=1.2 \
  -e businesscentral_image=rhpam-bc-apd \
  -e kieserver_image_tag=1.2 \
+ -e use_ephemeral_postgresql=false \
  -e businesscentral_image_tag=1.2 \
  -e rhsso_url=$rhsso_url \
  -e install_tools=false \

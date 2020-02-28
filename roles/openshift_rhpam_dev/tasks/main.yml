@@ -116,10 +116,14 @@
         namespace: "{{ ocp_project }}"
         from_file:
           dir: "{{ work_dir }}/{{ postgresql_init_configmap }}"
+
+    - set_fact:
+        postgresql_template: rhpam-dev-postgresql-ephemeral.yaml
+      when: use_ephemeral_postgresql|bool
     
-    - name: copy postgresql template
+    - name: "copy postgresql template {{ postgresql_template }}"
       template:
-        src: "{{ postgresql_template }}"
+        src: "{{ resources_dir }}/{{ postgresql_template }}"
         dest: "{{ work_dir }}/postgresql-persistent.yaml"
     
     - name: postgresql secret
@@ -168,7 +172,7 @@
       namespace: "{{ ocp_project }}"
       kind: dc
     register: ks_result
-  
+
   - block:
     - name: "copy kie-server template {{ ks_template_yaml }}"
       template:
