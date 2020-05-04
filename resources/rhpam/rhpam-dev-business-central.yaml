@@ -5,6 +5,25 @@ items:
 - kind: Service
   apiVersion: v1
   spec:
+    clusterIP: "None"
+    ports:
+    - name: "ping"
+      port: 8888
+      targetPort: 8888
+    selector:
+      deploymentConfig: "{{ businesscentral_application_name }}"
+  metadata:
+    name: "{{ businesscentral_application_name }}-ping"
+    labels:
+      app: "{{ application_name }}"
+      service: "{{ businesscentral_application_name }}"
+    annotations:
+      service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+      description: "The JGroups ping port for rhpamcentr clustering."
+
+- kind: Service
+  apiVersion: v1
+  spec:
     ports:
     - name: http
       port: 8080
@@ -192,6 +211,12 @@ items:
             value: "{{ business_central_sso_secret }}"
           - name: SSO_PRINCIPAL_ATTRIBUTE
             value: "preferred_username"
+          - name: JGROUPS_PING_PROTOCOL
+            value: openshift.DNS_PING
+          - name: OPENSHIFT_DNS_PING_SERVICE_NAME
+            value: "{{ businesscentral_application_name }}-ping"
+          - name: OPENSHIFT_DNS_PING_SERVICE_PORT
+            value: "8888"
         volumes:
         - name: "{{ businesscentral_application_name }}-pvol"
           persistentVolumeClaim:
@@ -205,7 +230,8 @@ items:
       service: "{{ businesscentral_application_name }}"
   spec:
     accessModes:
-    - ReadWriteOnce
+    - "{{ business_central_pvc_accessmode }}"
     resources:
       requests:
         storage: {{ businesscentral_pvc_volume_capacity }}
+    storageClassName: {{ businesscentral_pvc_storage_class_name }}
