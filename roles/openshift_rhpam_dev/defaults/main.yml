@@ -57,8 +57,8 @@ use_custom_pam: false
 
 businesscentral_application_name: "{{ application_name }}-bc"
 businesscentral_image: rhpam-businesscentral-rhel8
-businesscentral_image_tag: 7.6.0-2
-businesscentral_image_namespace: "{{ project_rhpam }}" 
+businesscentral_image_tag: 7.7.1-1
+businesscentral_image_namespace: "{{ project_rhpam }}"
 business_central_cpu_request: 200m
 businesscentral_memory_request: 1Gi
 businesscentral_cpu_limit: 2000m
@@ -184,7 +184,7 @@ kieserver_java_opts_append: " -Dorg.kie.mail.session=java:jboss/mail/Default"
 
 kieserver_image_namespace: "{{ project_rhpam }}"
 kieserver_image: rhpam-kieserver-rhel8
-kieserver_image_tag: 7.6.0-2
+kieserver_image_tag: 7.7.1-1
 
 kieserver_cpu_request: 200m
 kieserver_memory_request: 1Gi
@@ -238,9 +238,9 @@ psql_memory_limit: 512Mi
 
 ####        Business Central Monitoring         ##########
 businessmonitoring_application_name: "{{ application_name }}-monitoring"
-businessmonitoring_image_namespace: "{{ project_rhpam }}"
+businessmonitoring_image_namespace:  "{{ project_rhpam }}"
 businessmonitoring_image: rhpam-businesscentral-monitoring-rhel8
-businessmonitoring_image_tag: 7.6.0-2
+businessmonitoring_image_tag: 7.7.1-1
 businessmonitoring_cpu_request: 200m
 businessmonitoring_memory_request: 3Gi
 businessmonitoring_cpu_limit: 2000m

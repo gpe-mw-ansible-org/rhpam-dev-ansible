@@ -170,7 +170,7 @@ ansible-playbook playbooks/install.yml \
  -e use_ephemeral_postgresql=false \
  -e businesscentral_image_tag=1.2 \
  -e rhsso_url=$rhsso_url \
- -e install_tools=false \
+ -e install_tools=true \
  -e seq_start=1 -e seq_end=1
 -----
 
