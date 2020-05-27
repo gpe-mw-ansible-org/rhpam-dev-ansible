@@ -35,8 +35,8 @@ A RH-SSO environment can be provisioned using the link:https://github.com/gpe-mw
 The _rh-sso-multi-realm_ ansible will create an OCP project called _rhsso-sso0_ . 
 Within this _rhsso-sso0_ OCP project, a RH-SSO and corresponding mysql databased will be installed.
 +
-The RH-SSO instance will be pre-configured with a SSO realm called: _kie-realm_.
-_kie-realm_ comes pre-configured with users and roles that support RH-PAM Business Central and Kie-Server.
+The RH-SSO instance will be pre-configured with a SSO realm called: _kieRealm_.
+_kieRealm_ comes pre-configured with users and roles that support RH-PAM Business Central and Kie-Server.
 
 
 == Optional Integration with RH-SSO

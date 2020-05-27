@@ -268,7 +268,7 @@ customerbusinessmontoring_image_tag: 1.3
 # If integrating with RH-SSO, use a URL similar to the following:
 #   https://sso-rhsso-sso0.apps-71b4.generic.opentlc.com/auth
 rhsso_url: 
-sso_realm: kie-realm
+sso_realm: kieRealm
 sso_disable_ssl_certificate_validation: "true"
 
 business_central_sso_client: business-central
