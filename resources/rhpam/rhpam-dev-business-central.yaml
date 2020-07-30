@@ -51,6 +51,7 @@ items:
       service: "{{ businesscentral_application_name }}"
     annotations:
       haproxy.router.openshift.io/timeout: 60s
+      kubernetes.io/tls-acme: "true"
   spec:
     to:
       name: "{{ businesscentral_application_name }}"

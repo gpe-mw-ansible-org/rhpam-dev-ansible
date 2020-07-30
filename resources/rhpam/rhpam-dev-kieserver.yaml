@@ -24,6 +24,8 @@ items:
   id: "{{ kieserver_application_name }}-https"
   metadata:
     name: {{ kieserver_application_name }}
+    annotations:
+      kubernetes.io/tls-acme: "true"
     labels:
       app: "{{ application_name }}"
       service: "{{ kieserver_application_name }}"
