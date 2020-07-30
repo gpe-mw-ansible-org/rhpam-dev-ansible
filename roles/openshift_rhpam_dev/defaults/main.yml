@@ -5,7 +5,7 @@ application_name: rhpam
 service_account: "{{ application_name }}-rhpamsvc"
 
 # Admin user for Business Central, Business Central Monitoring and KIE-Server 
-kie_admin_user: adminUser
+kie_admin_user: pamAdmin
 kie_admin_password: admin1!
 
 # KIE server mbeans enabled/disabled. (Sets the kie.mbeans and kie.scanner.mbeans system properties)
@@ -57,7 +57,7 @@ use_custom_pam: false
 
 businesscentral_application_name: "{{ application_name }}-bc"
 businesscentral_image: rhpam-businesscentral-rhel8
-businesscentral_image_tag: 7.7.1-1
+businesscentral_image_tag: 7.8.0-4
 businesscentral_image_namespace: "{{ project_rhpam }}"
 business_central_cpu_request: 200m
 businesscentral_memory_request: 1Gi
@@ -72,14 +72,14 @@ businesscentral_pvc_volume_capacity: "1Gi"
 bc_template_yaml: rhpam-dev-business-central.yaml
 
 # User name for accessing the Maven service hosted by Business Central
-kie_maven_user: adminUser
+kie_maven_user: pamAdmin
 kie_maven_password: admin1!
 
 
 git_hooks_dir: "{{ bc_volume_mount_point }}/git_hooks"
 
 custom_businesscentral_image: rhpam-bc-apd
-custom_businesscentral_image_tag: 1.3
+custom_businesscentral_image_tag: 7.8
 
 business_central_pvc_accessmode: ReadWriteOnce
 businesscentral_pvc_storage_class_name:
@@ -184,7 +184,7 @@ kieserver_java_opts_append: " -Dorg.kie.mail.session=java:jboss/mail/Default"
 
 kieserver_image_namespace: "{{ project_rhpam }}"
 kieserver_image: rhpam-kieserver-rhel8
-kieserver_image_tag: 7.7.1-1
+kieserver_image_tag: 7.8.0-3
 
 kieserver_cpu_request: 200m
 kieserver_memory_request: 1Gi
@@ -200,7 +200,7 @@ prometheus_server_ext_disabled: "true"
 
 ks_template_yaml: rhpam-dev-kieserver.yaml
 custom_kieserver_image: rhpam-ks-apd
-custom_kieserver_image_tag: 1.3
+custom_kieserver_image_tag: 7.8
 
 
 # Used only with a managed "freeform" kie-server deployment where org.kie.server.startup.strategy=OpenShiftStartupStrategy in kie-server
@@ -240,7 +240,7 @@ psql_memory_limit: 512Mi
 businessmonitoring_application_name: "{{ application_name }}-monitoring"
 businessmonitoring_image_namespace:  "{{ project_rhpam }}"
 businessmonitoring_image: rhpam-businesscentral-monitoring-rhel8
-businessmonitoring_image_tag: 7.7.1-1
+businessmonitoring_image_tag: 7.8.0-4
 businessmonitoring_cpu_request: 200m
 businessmonitoring_memory_request: 3Gi
 businessmonitoring_cpu_limit: 2000m
@@ -254,7 +254,7 @@ businessmonitoring_pvc_volume_capacity: "1Gi"
 bc_monitoring_template_yaml: rhpam-monitoring.yaml
 
 custom_businessmonitoring_image: rhpam-monitoring-apd
-customerbusinessmontoring_image_tag: 1.3
+customerbusinessmontoring_image_tag: 7.8
 ###########################################
 
 
@@ -277,7 +277,7 @@ kie_server_sso_client: kie-server
 kie_server_sso_secret: 252793ed-7118-4ca8-8dab-5622fa97d892
 
 # The following will be used to create the above SSO clients in RH-SSO if they do not already exist in the {{ sso_realm }}.
-sso_username: admin
+sso_username: ssoRealmAdmin
 sso_password: admin1234
 
 ###########################################################

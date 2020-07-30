@@ -4,6 +4,8 @@ items:
 - kind: Route
   apiVersion: v1
   metadata:
+    annotations:
+      kubernetes.io/tls-acme: "true"
     labels:
       app: {{ nexus_app }}
     name: {{ nexus_app }}

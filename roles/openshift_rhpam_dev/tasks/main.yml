@@ -69,7 +69,7 @@
         json_template: '\{\{.status.readyReplicas\}\}'
       register: result
       until: result.stdout == "1"
-      retries: 10
+      retries: 15
       delay: 30
       changed_when: false
   
@@ -334,7 +334,7 @@
       json_template: '\{\{.status.readyReplicas\}\}'
     register: result
     until: result.stdout == "1"
-    retries: 10
+    retries: 15
     delay: 30
     changed_when: false
 
@@ -376,7 +376,7 @@
         json_template: '\{\{.status.readyReplicas\}\}'
       register: result
       until: result.stdout == "1"
-      retries: 10
+      retries: 15
       delay: 30
       changed_when: false
   
@@ -387,4 +387,12 @@
 ##########################################
 
 
+- name: "Identify pods in Completed status in {{ ocp_project }}"
+  shell: |
+    oc get pods -n {{ ocp_project }} | grep Completed | awk '{print $1}'
+  register: completed_pods
 
+- name: "Delete completed pods {{ completed_pods.stdout }}"
+  shell: |
+    oc delete pod {{ item }} -n {{ ocp_project }}
+  with_items: "{{ completed_pods.stdout.splitlines() }}"

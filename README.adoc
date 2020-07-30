@@ -164,12 +164,11 @@ ansible-playbook playbooks/install.yml \
  -e configure_smtp_relay=false \
  -e use_custom_pam=true \
  -e kieserver_image=rhpam-ks-apd \
- -e kieserver_image_tag=1.2 \
+ -e kieserver_image_tag=7.8 \
  -e businesscentral_image=rhpam-bc-apd \
- -e kieserver_image_tag=1.2 \
+ -e businesscentral_image_tag=7.8 \
  -e use_ephemeral_postgresql=false \
- -e businesscentral_image_tag=1.2 \
- -e rhsso_url=$rhsso_url \
+ -e rhsso_url=https://$rhsso_hostname/auth \
  -e install_tools=true \
  -e seq_start=1 -e seq_end=1
 -----
