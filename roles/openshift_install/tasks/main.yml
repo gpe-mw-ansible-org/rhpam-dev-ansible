@@ -9,7 +9,7 @@
     ocp_project_desc: "{{ project_tools_desc }}"
     work_dir_name: nexus2
     resources_dir: "{{ resources_home_dir }}/nexus2"
-  when: install_tools
+  when: install_tools|bool
   
 - name: install pgadmin4
   import_role: 
@@ -20,7 +20,7 @@
     ocp_project_desc: "{{ project_tools_desc }}"
     work_dir_name: pgadmin4
     resources_dir: "{{ resources_home_dir }}/pgadmin4"
-  when: install_tools
+  when: install_tools|bool
 
 - name: install load tester
   import_role:
@@ -31,7 +31,7 @@
     ocp_project_desc: "{{ project_tools_desc }}"
     work_dir_name: loadtester
     resources_dir: "{{ resources_home_dir }}/loadtester"
-  when: install_tools
+  when: install_tools|bool
 
 - name: install rhpam-dev
   import_role: 
