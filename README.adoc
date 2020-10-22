@@ -3,17 +3,17 @@
 = RHPAM Provisioning
 
 .Prerequisites:
-* Existing *OCP 4.2* cluster environment
-* Authentication to that existing OCP 4.2 environment as a cluster admin user.
+* Existing *OCP 4.X* cluster environment
+* Authentication to that existing OCP 4.X environment as a cluster admin user.
 
 == Overview
 This ansible assists in the provisioning of one or more Red Hat Process Automation Manager instances on a pre-existing OpenShift environment.
 
 This ansible is useful for supporting demos and labs where the focus is the RH-PAM product.
 
-The PAM KIE-Server is configured to leverage a PostgreSQL database.
+The RH-PAM KIE-Server is configured to leverage a PostgreSQL database.
 
-The following diagram depicts the OpenShift project and corresponding components provisioned by the ansible in this project (along with related ansible):
+The following diagram depicts the OpenShift project and corresponding components provisioned by the ansible (along with related ansible):
 
 image::images/arch_topology.png[]
 
