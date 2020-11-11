@@ -15,7 +15,7 @@ The PAM KIE-Server is configured to leverage a PostgreSQL database.
 
 The following diagram depicts the OpenShift project and corresponding components provisioned by the ansible in this project (along with related ansible):
 
-image::images/arch_topology.png[]
+image::docs/images/arch_topology.png[]
 
 . *pam7-tools-{{ ocp_user }}*
 +
@@ -217,14 +217,14 @@ git clone https://github.com/gpe-mw-training/advanced-process-development-labs-e
 cd advanced-process-development-labs-etc
 mvn clean install
 cd etc/kie-server-docker
-podman build -t rhpam-ks-apd:1.2 .
+podman build -t rhpam-ks-apd:1.4 .
 ----
 
 . Push images
 ----
 podman login quay.io
-podman tag rhpam-ks-apd:1.2 quay.io/rhtgptetraining/rhpam-ks-apd:1.2
-podman push quay.io/rhtgptetraining/rhpam-ks-apd:1.2
+podman tag rhpam-ks-apd:1.2 quay.io/rhtgptetraining/rhpam-ks-apd:1.4
+podman push quay.io/rhtgptetraining/rhpam-ks-apd:1.4
 ----
 
 == Uninstall

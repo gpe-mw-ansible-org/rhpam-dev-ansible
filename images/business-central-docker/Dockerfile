@@ -1,7 +1,7 @@
-# podman build --rm -t quay.io/rhtgptetraining/rhpam-bc-apd:1.3 .
-# podman push quay.io/rhtgptetraining/rhpam-bc-apd:1.3
+# podman build --rm -t quay.io/rhtgptetraining/rhpam-bc-apd:7.9 .
+# podman push quay.io/rhtgptetraining/rhpam-bc-apd:7.9
 
-FROM registry.redhat.io/rhpam-7/rhpam-businesscentral-rhel8:7.6.0-2
+FROM registry.redhat.io/rhpam-7/rhpam-businesscentral-rhel8:7.9.0-14
 USER root
 RUN chown jboss:jboss -R /home/jboss
 RUN chmod -R 777 /home/jboss

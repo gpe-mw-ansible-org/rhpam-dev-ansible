@@ -1,7 +1,7 @@
-# podman build --rm -t quay.io/rhtgptetraining/rhpam-ks-apd:1.3 .
-# podman push quay.io/rhtgptetraining/rhpam-ks-apd:1.3
+# podman build --rm -t quay.io/rhtgptetraining/rhpam-ks-apd:7.9 .
+# podman push quay.io/rhtgptetraining/rhpam-ks-apd:7.9
 
-FROM registry.redhat.io/rhpam-7/rhpam-kieserver-rhel8:7.6.0-2
+FROM registry.redhat.io/rhpam-7/rhpam-kieserver-rhel8:7.9.0-7
 
 # web services
 ##  Source code:   https://github.com/gpe-mw-training/advanced-process-development-labs-etc
