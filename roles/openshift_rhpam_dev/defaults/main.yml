@@ -183,10 +183,6 @@ kie_server_persistence_ds: "java:/jboss/datasources/rhpam"
 # Sets refresh-interval for the EJB timer database data-store service
 time_service_data_store_refresh_interval:
 
-# Default for org.kie-mail.session = java:/jbpmMailSession
-# Will switch back to Default since current approach is to add a postfix based smtp relay as a sidecar listening on localhost:25
-kieserver_java_opts_append: " -Dorg.kie.mail.session=java:jboss/mail/Default"
-
 kieserver_image_namespace: "{{ project_rhpam }}"
 kieserver_image: rhpam-kieserver-rhel8
 kieserver_image_tag: 7.9.0-7
@@ -214,6 +210,15 @@ custom_kieserver_image_tag: 7.9
 workbench_service_name: "{{ businesscentral_application_name }}"
 
 use_ephemeral_postgresql: false
+
+# Used in defining URLs (of other resources) returned in responses of various KIE-Server REST APIs
+#   ie: server/containers/$containerId/forms/processes/$processDefId/content?patternfly
+org_kie_server_location: "https://{{ kieserver_application_name }}-{{ project_rhpam }}.{{ OCP_WILDCARD_DOMAIN }}"
+
+# Default for org.kie-mail.session = java:/jbpmMailSession
+# Will switch back to Default since current approach is to add a postfix based smtp relay as a sidecar listening on localhost:25
+kieserver_java_opts_append: " -Dorg.kie.mail.session=java:jboss/mail/Default -Dorg.kie.server.location={{ org_kie_server_location }}/services/rest/server"
+
 ###########################################################
 
 

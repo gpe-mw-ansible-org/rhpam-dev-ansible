@@ -98,6 +98,12 @@ Optional.  Default = -Dorg.kie.mail.session=java:jboss/mail/Default
 +
 Used to add system properties to KIE-server 
 
+. *OCP_WILDCARD_DOMAIN*
++
+Required when provisioning RH-PAM KIE-Server
++
+Examples: apps.ratwater.xyz
+
 . *provision_businesscentral*
 +
 Optional; Default is true
@@ -169,6 +175,7 @@ ansible-playbook playbooks/install.yml \
  -e businesscentral_image_tag=7.8 \
  -e use_ephemeral_postgresql=false \
  -e rhsso_url=https://$rhsso_hostname/auth \
+ -e OCP_WILDCARD_DOMAIN=$OCP_WILDCARD_DOMAIN \
  -e install_tools=true \
  -e seq_start=1 -e seq_end=1
 -----
