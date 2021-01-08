@@ -3,6 +3,8 @@
 
 FROM registry.redhat.io/rhpam-7/rhpam-kieserver-rhel8:7.9.0-7
 
+ENV JBPM_VERSION=7.44.0.Final-redhat-00003
+
 # web services
 ##  Source code:   https://github.com/gpe-mw-training/advanced-process-development-labs-etc
 ##  After building, copy the two web artifacts into this same directory where the Dockerfile exists 
@@ -23,3 +25,7 @@ RUN /opt/eap/bin/add-user.sh -a -u 'user20' -p 'bpms' -g 'user,group2,kie-server
 RUN /opt/eap/bin/add-user.sh -a -u 'user21' -p 'bpms' -g 'user,group2,kie-server,rest-task,rest-query'
 RUN /opt/eap/bin/add-user.sh -a -u 'user30' -p 'bpms' -g 'user,group3,kie-server,rest-task,rest-query'
 RUN /opt/eap/bin/add-user.sh -a -u 'user31' -p 'bpms' -g 'user,group3,kie-server,rest-task,rest-query'
+
+RUN wget https://maven.repository.redhat.com/ga/org/jbpm/jbpm-event-emitters-elasticsearch/$JBPM_VERSION/jbpm-event-emitters-elasticsearch-$JBPM_VERSION.jar \
+    -O /opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib/jbpm-event-emitters-elasticsearch-$JBPM_VERSION.jar \
+    && chown jboss:root /opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib/jbpm-event-emitters-elasticsearch-$JBPM_VERSION.jar

@@ -84,7 +84,7 @@ kie_maven_password: admin1!
 git_hooks_dir: "{{ bc_volume_mount_point }}/git_hooks"
 
 custom_businesscentral_image: rhpam-bc-apd
-custom_businesscentral_image_tag: 7.8
+custom_businesscentral_image_tag: 7.9
 
 business_central_pvc_accessmode: ReadWriteOnce
 businesscentral_pvc_storage_class_name:
