@@ -49,21 +49,50 @@ The out-of-the-box defaults for integration with RH-SSO closely allign with an R
 All of the default ansible variables needed for integrating with RH-SSO can be found in the following file of this project:  roles/openshift_rhpam_dev/defaults/main.yml .
 The default values of these variables can all be over-written at the _ansible-playbook_ command line.
 
+=== Auto-Generated SSO Clients
+
+Upon start-up of the Business Central and KIE-Server web apps, the following corresponding SSO clients will be created (by each of those web apps) in the `kieRealm` of RH-SSO:
+
+. *business-central*
+. *kie-server*
+
+Both SSO clients are configured with an `Access Type` of: `confidential`
+
 === Smoke Test KIE-Server integrated with RH-SSO
 
+. Authenticate into the `kieRealm` and capture the client secret of the `kie-server` client
++
+image::docs/images/sso_client_secret.png[]
+
+. Set the following environment variables:
++
 -----
 rhsso_hostname=keycloak-rh-sso.apps.g.p.com
 kieserver_hostname=rhpam-kieserver-rhpam-dev-oncore.apps.g.p.com
 retrieve_token_url="https://$rhsso_hostname/auth/realms/kieRealm/protocol/openid-connect/token"
+client_secret=252793ed-7118-4ca8-8dab-5622fa97d892
+-----
 
+. Retrieve an OAuth2 token using the `kie-server` SSO client of `kieRealm`:
++
+-----
 TKN=$(curl -X POST "$retrieve_token_url" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=pamAdmin" \
             -d "password=admin1!" \
             -d "grant_type=password" \
             -d "client_id=kie-server" \
+            -d "client_secret=$client_secret" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 
+echo $TKN
+
+eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJOd010SUpfRnFuY3BMODJSQWRJMkMxSklLcXJWUzlBRWVNSHM0RktRZi1BIn0.eyJleHAiOjE2MTA3NjEzMzUsImlhdCI6MTYxMDc2MTAzNSwianRpIjoiOGM1YzJlZTAtMmZmZi00MGFhLTg0MGYtZWE2N2MxYWViNWZjIiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay1yaC1zc28uYXBwcy5yaHRuY2twbWcucmhzbGVkb2NwLmNvbS9hdXRoL3JlYWxtcy9raWVSZWFsbSIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIzMmE4NjczNi04MThiLTRiM2MtODQyZi0zY2U4OGU3MjJkZGMiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJraWUtc2VydmVyIiwic2Vzc2lvbl9zdGF0ZSI6Ijk0M2Y3NzRhLTgyOTItNDg1Mi04MmZkLWY2ZGNiMGU0NzQ0YiIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9yaHBhbS1raWVzZXJ2ZXItcmhwYW0tZGV2LW9uY29yZS5hcHBzLnJodG5ja3BtZy5yaHNsZWRvY3AuY29tOjQ0MyIsImh0dHBzOi8vcmhwYW0ta2llc2VydmVyLXJocGFtLWRldi1vbmNvcmUuYXBwcy5yaHRuY2twbWcucmhzbGVkb2NwLmNvbSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsia2llbWdtdCIsImFkbWluIiwicmVzdC1hbGwiLCJBZG1pbmlzdHJhdG9ycyIsImtpZS1zZXJ2ZXIiLCJ1c2VyIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW1hZG1pbiIsImVtYWlsIjoicGFtYWRtaW5Ab3BlbnNoaWZ0Lm9wZW50bGMuY29tIn0.bmHT1R25G13c4CdYK2am-5-a-Y1QwRequsXg2C55fj7kdfBr8yJ7_qRrGQxQ4spy28f3O0vdtMc10O3h3HFTPZoCaGVqfciE4axcZI2zZLdVmc6qlmfLIj-hjZMqoOB-tAYyHcFoUN9mtQmJWhCaFO0JysCUpQHeOjssSizjjRHLW5Dsg5JHqZxR4iBuG-KBlfK-cI0ryeNQV5ljdP6nNn7UrEbhHP_rFyZlmHXgOAraL6MC75Rnra0nwIvg4Wu30WXppxT7HUlQj1lFBaZQUzmFXXJBXHBq_5ofNHgervMFtmyzlG_3r892e4JS1qZ7o4fDaXyMvD1RTa6WwKpC8g
+-----
+
+. Using the OAuth2 token, invoke the kie-server
++
+-----
 curl -v -X GET -H "Authorization: Bearer $TKN" https://$kieserver_hostname/services/rest/server
 -----
 
