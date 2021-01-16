@@ -49,6 +49,24 @@ The out-of-the-box defaults for integration with RH-SSO closely allign with an R
 All of the default ansible variables needed for integrating with RH-SSO can be found in the following file of this project:  roles/openshift_rhpam_dev/defaults/main.yml .
 The default values of these variables can all be over-written at the _ansible-playbook_ command line.
 
+=== Smoke Test KIE-Server integrated with RH-SSO
+
+-----
+rhsso_hostname=keycloak-rh-sso.apps.g.p.com
+kieserver_hostname=rhpam-kieserver-rhpam-dev-oncore.apps.g.p.com
+retrieve_token_url="https://$rhsso_hostname/auth/realms/kieRealm/protocol/openid-connect/token"
+
+TKN=$(curl -X POST "$retrieve_token_url" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=pamAdmin" \
+            -d "password=admin1!" \
+            -d "grant_type=password" \
+            -d "client_id=kie-server" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+
+curl -v -X GET -H "Authorization: Bearer $TKN" https://$kieserver_hostname/services/rest/server
+-----
+
 == Environment Variables
 
 
