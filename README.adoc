@@ -60,18 +60,120 @@ Both SSO clients are configured with an `Access Type` of: `confidential`
 
 === Smoke Test KIE-Server integrated with RH-SSO
 
-. Authenticate into the `kieRealm` and capture the client secret of the `kie-server` client
+In this section, you will retrieve an OAuth2 token from the `kieRealm` SSO realm and use that token to invoke the RESTful API of the KIE-Server.  For the purpose of demonstration, Linux/OSX command line tools will be used.
+
+
+
+==== Deploy the `Mortgages` Application
+
+In this quick start, you will use the `Mortgages` Trial Sample based on Drools
+
+image::docs/images/mortgages_trial_sample.png[]
+
+. Import the project via Business Central.
+
+. Study the rules and data objects.
+
+. Build and deploy to your KIE-Server.
+
+. Set an environment variable whose value is the name of the newly deployed `deployment unit` :
+
+.. Navigate to your `Execution Server` page:
++
+image::docs/images/mortgages_kie_container.png[]
+
+. Set the environment variable:
++
+-----
+containerId=mortgages_1.0.0-SNAPSHOT
+-----
+
+==== Identify SSO Client Secret
+
+The `kie-server` SSO client of the `kieRealm` allows for obtaining an OAuth2 token via the `Resource Owner Password Credentials` flow of OAuth2.
+
+Because the `kie-server` sso client is configured as `confidential`, the SSO `client_secret` will be needed to retrieve the OAUth2 token.
+
+. Authenticate into the `kieRealm` and identify the client secret of the `kie-server` client
 +
 image::docs/images/sso_client_secret.png[]
 
-. Set the following environment variables:
+. Set an environment variable called `sso_client_secret`:
++
+-----
+sso_client_secret=252793ed-7118-4ca8-8dab-5622fa97d892
+-----
+
+
+==== Invoke Mortage app via SSO Secured KIE-Server
+Now that the Mortgage app has been deployed to your RH-PAM KIE-SERVER and you know the `client_secret` of your SSO kie-realm, you can obtain an OAuth2 access token from RH-SSO and use that token to invoke the rules of the Mortgage app via the RESTful API of the KIE-server.
+
+. Set the following environment variables with values similar to the following:
 +
 -----
 rhsso_hostname=keycloak-rh-sso.apps.g.p.com
 kieserver_hostname=rhpam-kieserver-rhpam-dev-oncore.apps.g.p.com
 retrieve_token_url="https://$rhsso_hostname/auth/realms/kieRealm/protocol/openid-connect/token"
-client_secret=252793ed-7118-4ca8-8dab-5622fa97d892
 -----
+
+. Create a request payload that will be used when firing rules of the `Mortgage` sample application:
++
+-----
+echo '
+{
+  "commands": [
+      { "insert": {
+        "object": {
+          "mortgages.mortgages.Applicant": {
+            "name": "sarah",
+            "age": 25,
+            "creditRating": 650
+          }
+        },
+        "out-identifier": "applicant_sarah",
+        "return-object": true
+      }}, 
+      { "insert": {
+        "object": {
+          "mortgages.mortgages.LoanApplication": {
+            "amount": 2500
+          }
+        },
+        "out-identifier": "loanapp",
+        "return-object": true
+      }}, 
+      { "insert": {
+        "object": {
+          "mortgages.mortgages.IncomeSource": {
+            "amount": "50"
+          }
+        },
+        "out-identifier": "incomesource",
+        "return-object": true
+      }}, 
+      { "insert": {
+        "object": {
+          "mortgages.mortgages.Bankruptcy": {
+            "yearOfOccurence": "1991",
+            "amountOwed": "11000"
+          }
+        },
+        "out-identifier": "bankruptcy",
+        "return-object": true
+      }},
+    {
+      "fire-all-rules": {
+        "max": 10,
+        "out-identifier": "firedActivations"
+      }
+    }
+  ]
+}
+
+' > /tmp/mortgage_rules_execution.json
+-----
++
+Notice the existence of a bankruptcy fact in the payload.  Based on the rules of the Mortgage application, you can expect that a loan application will subsequently fail.
 
 . Retrieve an OAuth2 token using the `kie-server` SSO client of `kieRealm`:
 +
@@ -90,10 +192,44 @@ echo $TKN
 eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJOd010SUpfRnFuY3BMODJSQWRJMkMxSklLcXJWUzlBRWVNSHM0RktRZi1BIn0.eyJleHAiOjE2MTA3NjEzMzUsImlhdCI6MTYxMDc2MTAzNSwianRpIjoiOGM1YzJlZTAtMmZmZi00MGFhLTg0MGYtZWE2N2MxYWViNWZjIiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay1yaC1zc28uYXBwcy5yaHRuY2twbWcucmhzbGVkb2NwLmNvbS9hdXRoL3JlYWxtcy9raWVSZWFsbSIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIzMmE4NjczNi04MThiLTRiM2MtODQyZi0zY2U4OGU3MjJkZGMiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJraWUtc2VydmVyIiwic2Vzc2lvbl9zdGF0ZSI6Ijk0M2Y3NzRhLTgyOTItNDg1Mi04MmZkLWY2ZGNiMGU0NzQ0YiIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9yaHBhbS1raWVzZXJ2ZXItcmhwYW0tZGV2LW9uY29yZS5hcHBzLnJodG5ja3BtZy5yaHNsZWRvY3AuY29tOjQ0MyIsImh0dHBzOi8vcmhwYW0ta2llc2VydmVyLXJocGFtLWRldi1vbmNvcmUuYXBwcy5yaHRuY2twbWcucmhzbGVkb2NwLmNvbSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsia2llbWdtdCIsImFkbWluIiwicmVzdC1hbGwiLCJBZG1pbmlzdHJhdG9ycyIsImtpZS1zZXJ2ZXIiLCJ1c2VyIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW1hZG1pbiIsImVtYWlsIjoicGFtYWRtaW5Ab3BlbnNoaWZ0Lm9wZW50bGMuY29tIn0.bmHT1R25G13c4CdYK2am-5-a-Y1QwRequsXg2C55fj7kdfBr8yJ7_qRrGQxQ4spy28f3O0vdtMc10O3h3HFTPZoCaGVqfciE4axcZI2zZLdVmc6qlmfLIj-hjZMqoOB-tAYyHcFoUN9mtQmJWhCaFO0JysCUpQHeOjssSizjjRHLW5Dsg5JHqZxR4iBuG-KBlfK-cI0ryeNQV5ljdP6nNn7UrEbhHP_rFyZlmHXgOAraL6MC75Rnra0nwIvg4Wu30WXppxT7HUlQj1lFBaZQUzmFXXJBXHBq_5ofNHgervMFtmyzlG_3r892e4JS1qZ7o4fDaXyMvD1RTa6WwKpC8g
 -----
 
-. Using the OAuth2 token, invoke the kie-server
+. Using the OAuth2 token, invoke the kie-server to determine its current status:
 +
 -----
-curl -v -X GET -H "Authorization: Bearer $TKN" https://$kieserver_hostname/services/rest/server
+curl -v \
+    -H "Authorization: Bearer $TKN" \
+    -X GET \
+    https://$kieserver_hostname/services/rest/server
+-----
+
+. Using the OAuth2 token, invoke kie-server with payload to insert facts and fire all rules of the Mortgage application:
++
+-----
+curl -v \
+    -H "Authorization: Bearer $TKN" \
+    -H  "accept: application/json" \
+    -H  "content-type: application/json" \
+    -X POST http://$kieserver_hostname/services/rest/server/containers/instances/$containerId \
+    -d @/tmp/mortgage_rules_execution.json
+-----
+
+. The response should include a JSON element that indicates that the loan application has been declined due to a prior bankruptcy:
++
+-----
+{
+  "type" : "SUCCESS",
+  "msg" : "Container mortgages_1.0.0 successfully called.",
+  "result" : {
+    "execution-results" : {
+      "results" : [ {
+        "value" : {"mortgages.mortgages.LoanApplication":{
+  "amount" : 2500,
+  "approved" : false,
+  "approvedRate" : null,
+  "deposit" : null,
+  "explanation" : "has been bankrupt",
+  "insuranceCost" : null,
+  "lengthYears" : null
+}}
 -----
 
 == Environment Variables
