@@ -11,7 +11,7 @@ service_account: "{{ application_name }}-rhpamsvc"
 
 # Admin user for Business Central, Business Central Monitoring and KIE-Server 
 kie_admin_user: pamAdmin
-kie_admin_password: admin1!
+kie_admin_password: pam
 
 # KIE server mbeans enabled/disabled. (Sets the kie.mbeans and kie.scanner.mbeans system properties)
 #   Enables support for JMX monitoring and management on KieScanner and KieContainer.
@@ -78,7 +78,7 @@ bc_template_yaml: rhpam-dev-business-central.yaml
 
 # User name for accessing the Maven service hosted by Business Central
 kie_maven_user: pamAdmin
-kie_maven_password: admin1!
+kie_maven_password: pam
 
 
 git_hooks_dir: "{{ bc_volume_mount_point }}/git_hooks"
@@ -288,6 +288,6 @@ kie_server_sso_secret: 252793ed-7118-4ca8-8dab-5622fa97d892
 
 # The following will be used to create the above SSO clients in RH-SSO if they do not already exist in the {{ sso_realm }}.
 sso_username: ssoRealmAdmin
-sso_password: admin1234
+sso_password: pam
 
 ###########################################################
